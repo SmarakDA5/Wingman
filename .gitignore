@@ -2,8 +2,6 @@
 # Build artifacts
 dist/
 build/
-*.css
-*.js
 
 # Dependencies
 node_modules/
