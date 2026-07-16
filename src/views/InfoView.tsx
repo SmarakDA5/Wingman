@@ -8,7 +8,7 @@ import type { QuestionnaireQuestion } from '../types';
 export const InfoView = () => {
   const navigate = useNavigate();
   const { questions, isLoading, fetchQuestions, updateUserInfo } = useInfoStore();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -36,7 +36,12 @@ export const InfoView = () => {
     setSubmitSuccess(false);
 
     try {
-      await updateUserInfo(answers);
+      // Include the logged-in user's email with the answers
+      const answersWithEmail = {
+        ...answers,
+        email: user?.email || '',
+      };
+      await updateUserInfo(answersWithEmail);
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (error) {
@@ -115,6 +120,16 @@ export const InfoView = () => {
             onSubmit={handleSubmit}
             className="liquid-glass rounded-2xl shadow-md p-6 space-y-6"
           >
+            {/* Display logged-in email (read-only) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email Address
+              </label>
+              <div className="w-full min-h-[44pt] px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                {user?.email || 'Not available'}
+              </div>
+            </div>
+
             {questions.length > 0 ? (
               questions.map((question) => (
                 <div key={question.id}>

@@ -13,12 +13,6 @@ const MOCK_QUESTIONS: QuestionnaireQuestion[] = [
     value: '',
   },
   {
-    id: 'email',
-    label: 'Email Address',
-    type: 'email',
-    value: '',
-  },
-  {
     id: 'phone',
     label: 'Phone Number',
     type: 'text',
