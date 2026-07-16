@@ -17,8 +17,7 @@ import './App.css';
 // Authenticated Shell Component
 const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const { verifySubscription } = useSubscriptionStore();
-  const { isActive: isSubscriptionActive, isLoading: isCheckingSubscription } = useSubscriptionStore();
+  const { verifySubscription, isActive: isSubscriptionActive, isLoading: isCheckingSubscription } = useSubscriptionStore();
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   useEffect(() => {
@@ -26,8 +25,11 @@ const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Only show modal after loading is complete AND subscription is not active
     if (!isCheckingSubscription && !isSubscriptionActive) {
       setShowSubscriptionModal(true);
+    } else {
+      setShowSubscriptionModal(false);
     }
   }, [isSubscriptionActive, isCheckingSubscription]);
 
