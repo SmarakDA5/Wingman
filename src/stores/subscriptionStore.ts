@@ -4,7 +4,6 @@ import type { SubscriptionState } from '../types';
 
 export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   isActive: true, // Default to true for testing
-  isActive: false,
   isLoading: false,
 
   verifySubscription: async () => {
