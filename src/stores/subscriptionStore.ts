@@ -18,11 +18,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
       if (masterUserEmail && token?.includes('master_test_token')) {
         const hasSubscription = masterHasSubscription === 'true';
         set({ isActive: hasSubscription, isLoading: false });
-        return;
+        return hasSubscription;
       }
-      
-      // WH3: Verify subscription for regular users
-      // const { isActive } = await webhooks.verifySubscription();
       
       // ============================================================================
       // WH3: Verify subscription for regular users
@@ -32,9 +29,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
       // MOCK DATA - Default to active for testing
       // ============================================================================
       set({ isActive: true, isLoading: false });
+      return true;
       // ============================================================================
     } catch (error) {
       set({ isActive: false, isLoading: false });
+      return false;
     }
   },
 }));

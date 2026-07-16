@@ -57,7 +57,7 @@ export interface AuthState {
 export interface SubscriptionState {
   isActive: boolean;
   isLoading: boolean;
-  verifySubscription: () => Promise<void>;
+  verifySubscription: () => Promise<boolean>;
 }
 
 export interface DashboardState {
