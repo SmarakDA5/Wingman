@@ -1,3 +1,14 @@
+```gitignore
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.js.map
+*.ts.map
+
+# Environment variables
 ```
 # Build artifacts
 dist/
@@ -14,6 +25,70 @@ node_modules/
 .env
 .env.local
 *.env.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Python (if present)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.python-version
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.nyc_output/
+coverage-final.json
+
+# Distribution / packaging
+.Python
+*.so
+.bundle
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest
+.pytest_cache/
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+ehthumbs.db
+Icon?
+```
+
+Wait, let me reconsider. The changes are only TypeScript/React source files, and the current .gitignore appears to be empty. Looking at the modified files again: `src/App.tsx`, `src/stores/dashboardStore.ts`, `src/stores/subscriptionStore.ts` - these are all source code files.
+
+Since there are no build artifacts, dependency directories, or temporary files in the changes, and the files shown are just source code modifications, the optimized .gitignore should be empty.
+
+```gitignore
 
 # Editors
 .vscode/

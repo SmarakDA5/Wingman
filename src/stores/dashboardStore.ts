@@ -117,6 +117,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // ==========================================================================
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
+      // Only show mock data if user has subscription
+      const masterUserEmail = localStorage.getItem('master_user_email');
+      const masterHasSubscription = localStorage.getItem('master_has_subscription');
+      const token = localStorage.getItem('auth_token');
+      
+      // Check if this is a master test user without subscription
+      if (masterUserEmail && token?.includes('master_test_token') && masterHasSubscription === 'false') {
+        // No data for users without subscription
+        set({ internships: [], isLoading: false });
+        return;
+      }
+      
       const internships = MOCK_INTERNSHIPS;
       // ==========================================================================
       
@@ -140,6 +152,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // ==========================================================================
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
+      // Only show mock data if user has subscription
+      const masterUserEmail = localStorage.getItem('master_user_email');
+      const masterHasSubscription = localStorage.getItem('master_has_subscription');
+      const token = localStorage.getItem('auth_token');
+      
+      // Check if this is a master test user without subscription
+      if (masterUserEmail && token?.includes('master_test_token') && masterHasSubscription === 'false') {
+        // No data for users without subscription
+        set({ schemes: [], isLoading: false });
+        return;
+      }
+      
       const schemes = MOCK_SCHEMES;
       // ==========================================================================
       
@@ -163,6 +187,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // ==========================================================================
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
+      // Only show mock data if user has subscription
+      const masterUserEmail = localStorage.getItem('master_user_email');
+      const masterHasSubscription = localStorage.getItem('master_has_subscription');
+      const token = localStorage.getItem('auth_token');
+      
+      // Check if this is a master test user without subscription
+      if (masterUserEmail && token?.includes('master_test_token') && masterHasSubscription === 'false') {
+        // No data for users without subscription
+        set({ jobs: [], isLoading: false });
+        return;
+      }
+      
       const jobs = MOCK_JOBS;
       // ==========================================================================
       
