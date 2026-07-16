@@ -9,6 +9,19 @@ build/
 *.ts.map
 
 # Environment variables
+```
+# Build artifacts
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
 .env
 .env.local
 *.env.*
@@ -77,4 +90,7 @@ Since there are no build artifacts, dependency directories, or temporary files i
 
 ```gitignore
 
+# Editors
+.vscode/
+.idea/
 ```
