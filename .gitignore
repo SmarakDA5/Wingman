@@ -3,8 +3,20 @@
 node_modules/
 
 # Build artifacts
+build/
+dist/
 *.tsbuildinfo
 
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
 # Logs and temp files
+*.log
 *.tmp
 ```
