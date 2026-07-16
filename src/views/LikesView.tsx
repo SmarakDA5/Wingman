@@ -26,9 +26,9 @@ export const LikesView = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-4 py-6">Liked Events</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6">Liked Events</h1>
 
-      <div className="px-4 space-y-4">
+      <div className="px-6 space-y-4">
         {localLikedItems.length > 0 ? (
           localLikedItems.map((item) => (
             <EventCard

@@ -16,11 +16,11 @@ export const DashboardView = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pb-24 transition-colors duration-500">
       <div className="glass-card shadow-sm backdrop-blur-xl">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-4 py-6">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6">Dashboard</h1>
         <ScopeSlider value={scope} onChange={setScope} />
       </div>
 
-      <div className="px-4 py-6 space-y-8">
+      <div className="px-6 py-6 space-y-8">
         {/* Internships Section */}
         <section>
           <motion.h2 
