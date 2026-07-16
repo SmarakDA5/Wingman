@@ -1,0 +1,266 @@
+/* Global styles for Wingman - Apple HIG compliant */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Arial', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: #1d1d1f;
+  background-color: #f5f5f7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f5f5f7;
+    background-color: #000000;
+  }
+}
+
+/* Safe area insets for iOS devices */
+.pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.pt-safe-top {
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+/* Enhanced Glassmorphism utility - Liquid Glass effect */
+.backdrop-blur-glass {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dark .glass-card {
+  background: rgba(28, 28, 30, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-button {
+  background: rgba(58, 58, 60, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Touch target minimums per Apple HIG (44pt) */
+.touch-target {
+  min-width: 44pt;
+  min-height: 44pt;
+}
+
+/* Fluid typography */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+/* Apple-style gradient backgrounds */
+.gradient-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark .gradient-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Liquid Glass Effect with Godrays */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .liquid-glass {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Godrays / Refracted Light Animation */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 60%
+  );
+  transform: rotate(30deg);
+  animation: godray-move 8s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes godray-move {
+  0% { transform: translateX(-10%) rotate(30deg); }
+  50% { transform: translateX(10%) rotate(30deg); }
+  100% { transform: translateX(-10%) rotate(30deg); }
+}
+
+/* Fake Reflection Highlight */
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 8%;
+  right: 8%;
+  height: 35%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-radius: 9999px 9999px 12px 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Responsive Comfort Container - GitHub-style spacing */
+.comfort-container {
+  width: 100%;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .comfort-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .comfort-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .comfort-container {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .comfort-container {
+    max-width: 1100px;
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .comfort-container {
+    max-width: 1300px;
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
