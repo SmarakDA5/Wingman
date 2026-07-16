@@ -27,29 +27,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     
-    // ==========================================================================
-    // MASTER CONTROL - Bypass authentication for testing
-    // ==========================================================================
-    const masterUser = MASTER_CREDENTIALS.find(
-      (cred) => cred.email === email && cred.password === password
-    );
-    
-    if (masterUser) {
-      // Simulate successful login with mock data
-      const mockToken = 'master_test_token_' + Date.now();
-      const mockUser = {
-        id: 'master-001',
-        email: masterUser.email,
-        name: 'Master Test User',
-        isAuthenticated: true,
-      };
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('master_user_email', masterUser.email);
-      set({ user: mockUser, token: mockToken, isAuthenticated: true, isLoading: false });
-      return;
-    }
-    // ==========================================================================
-    
     try {
       // Check for master credentials first
       const masterUser = MASTER_CREDENTIALS.find(
