@@ -14,6 +14,8 @@ const NavItem = ({ to, icon }: NavItemProps) => (
         isActive
           ? 'text-white bg-white/20'
           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/10'
+          ? 'text-blue-600 dark:text-white bg-blue-100/50 dark:bg-white/20'
+          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-white/10'
       }`
     }
   >
