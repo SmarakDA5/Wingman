@@ -14,6 +14,25 @@ import { LikesView } from './views/LikesView';
 import { InfoView } from './views/InfoView';
 import './App.css';
 
+// Cross-tab auth state synchronization listener
+function AuthSyncListener() {
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'auth-storage') {
+        useAuthStore.persist.rehydrate();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  return null;
+}
+
 // Authenticated Shell Component
 const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -77,6 +96,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <BrowserRouter>
+      <AuthSyncListener />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicRoute><LandingView /></PublicRoute>} />
