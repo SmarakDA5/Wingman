@@ -17,7 +17,7 @@ export const ThemeSwitcher = ({ isDarkMode, onToggle }: ThemeSwitcherProps) => {
         <motion.button
           onClick={onToggle}
           className={`relative min-w-[44pt] min-h-[44pt] rounded-full flex items-center justify-center touch-manipulation transition-colors ${
-            !isDarkMode ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+            !isDarkMode ? 'text-gray-800' : 'text-gray-500 dark:text-gray-400'
           }`}
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: 1.05 }}
