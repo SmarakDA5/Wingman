@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import type { AuthState } from '../types';
 import webhooks from '../services/api';
 
+// Master control credentials for testing
+const MASTER_CREDENTIALS = [
+  { email: 'master26@demo.com', password: 'G@M3r', hasSubscription: true },
+  { email: 'slave26@demo.com', password: 'G@M3r', hasSubscription: false },
+];
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: localStorage.getItem('auth_token'),
@@ -12,7 +18,30 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     
     try {
-      // WH2: Authenticate user
+      // Check for master credentials first
+      const masterUser = MASTER_CREDENTIALS.find(
+        cred => cred.email === email && cred.password === password
+      );
+
+      if (masterUser) {
+        // Create mock user and token for master accounts
+        const token = `master_test_token_${masterUser.email}`;
+        const user = { id: `master_${masterUser.email}`, email: masterUser.email };
+        
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('master_user_email', masterUser.email);
+        localStorage.setItem('master_has_subscription', String(masterUser.hasSubscription));
+        
+        set({ 
+          user: { ...user, isAuthenticated: true }, 
+          token, 
+          isAuthenticated: true, 
+          isLoading: false 
+        });
+        return;
+      }
+
+      // WH2: Authenticate user (for non-master users)
       const { user, token } = await webhooks.authenticateUser(email, password);
       localStorage.setItem('auth_token', token);
       set({ user: { ...user, isAuthenticated: true }, token, isAuthenticated: true, isLoading: false });
