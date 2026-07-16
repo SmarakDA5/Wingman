@@ -6,11 +6,6 @@ import webhooks from '../services/api';
 const MASTER_CREDENTIALS = [
   { email: 'master26@demo.com', password: 'G@M3r', hasSubscription: true },
   { email: 'slave26@demo.com', password: 'G@M3r', hasSubscription: false },
-];
-// ============================================================================
-// MASTER CONTROL FOR TESTING - Remove this section when ready for production
-// ============================================================================
-const MASTER_CREDENTIALS = [
   {
     email: 'master@wingman.test',
     password: 'Wingman2024!',
@@ -20,7 +15,6 @@ const MASTER_CREDENTIALS = [
     password: 'Admin2024!',
   },
 ];
-// ============================================================================
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
