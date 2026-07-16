@@ -4,6 +4,7 @@ import type { SubscriptionState } from '../types';
 
 export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   isActive: true, // Default to true for testing
+  isActive: false,
   isLoading: false,
 
   verifySubscription: async () => {
@@ -25,6 +26,10 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
       // const { isActive } = await webhooks.verifySubscription();
       
       // ============================================================================
+      // WH3: Verify subscription for regular users
+      // const { isActive } = await webhooks.verifySubscription();
+
+      // ==========================================================================
       // MOCK DATA - Default to active for testing
       // ============================================================================
       set({ isActive: true, isLoading: false });

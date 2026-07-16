@@ -81,7 +81,7 @@ export const LandingView = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-block mb-4"
             >
-              <span className="glass-button text-gray-900 dark:text-white text-sm font-medium px-4 py-2 rounded-full">
+              <span className="hero-liquid-glass text-gray-900 dark:text-white text-sm font-medium px-4 py-2 rounded-full">
                 ✨ Your Career Companion
               </span>
             </motion.div>
@@ -109,7 +109,7 @@ export const LandingView = () => {
               </Link>
               <Link
                 to="/signin"
-                className="min-h-[44pt] glass-button hover:bg-white/50 dark:hover:bg-white/10 text-gray-900 dark:text-white font-semibold py-4 px-8 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 inline-flex items-center justify-center touch-manipulation hover:scale-105"
+                className="min-h-[44pt] hero-liquid-glass hover:bg-white/20 dark:hover:bg-white/10 text-gray-900 dark:text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 inline-flex items-center justify-center touch-manipulation hover:scale-105"
               >
                 Sign In
               </Link>

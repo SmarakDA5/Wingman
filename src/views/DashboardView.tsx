@@ -21,6 +21,12 @@ export const DashboardView = () => {
       </div>
 
       <div className="px-6 py-6 space-y-8">
+      <div className="glass-card shadow-sm backdrop-blur-xl comfort-container">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white py-6">Dashboard</h1>
+        <ScopeSlider value={scope} onChange={setScope} />
+      </div>
+
+      <div className="comfort-container py-6 space-y-8">
         {/* Internships Section */}
         <section>
           <motion.h2 
