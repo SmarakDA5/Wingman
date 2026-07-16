@@ -5,10 +5,16 @@ import webhooks from '../services/api';
 // ============================================================================
 // MASTER CONTROL FOR TESTING - Remove this section when ready for production
 // ============================================================================
-const MASTER_CREDENTIALS = {
-  email: 'master@wingman.test',
-  password: 'Wingman2024!',
-};
+const MASTER_CREDENTIALS = [
+  {
+    email: 'master@wingman.test',
+    password: 'Wingman2024!',
+  },
+  {
+    email: 'admin@wingman.test',
+    password: 'Admin2024!',
+  },
+];
 // ============================================================================
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,17 +29,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     // ==========================================================================
     // MASTER CONTROL - Bypass authentication for testing
     // ==========================================================================
-    if (email === MASTER_CREDENTIALS.email && password === MASTER_CREDENTIALS.password) {
+    const masterUser = MASTER_CREDENTIALS.find(
+      (cred) => cred.email === email && cred.password === password
+    );
+    
+    if (masterUser) {
       // Simulate successful login with mock data
       const mockToken = 'master_test_token_' + Date.now();
       const mockUser = {
         id: 'master-001',
-        email: MASTER_CREDENTIALS.email,
+        email: masterUser.email,
         name: 'Master Test User',
         isAuthenticated: true,
       };
       localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('master_user_email', MASTER_CREDENTIALS.email);
+      localStorage.setItem('master_user_email', masterUser.email);
       set({ user: mockUser, token: mockToken, isAuthenticated: true, isLoading: false });
       return;
     }

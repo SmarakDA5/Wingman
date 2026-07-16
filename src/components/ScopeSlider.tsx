@@ -11,7 +11,7 @@ const scopeOptions: { value: ScopeLevel; label: string }[] = [
   { value: 'specific', label: 'Specific' },
   { value: 'broad', label: 'Broad' },
   { value: 'broader', label: 'Broader' },
-  { value: 'explore', label: 'Explore' },
+  { value: 'explore', label: 'Unrestricted' },
 ];
 
 export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
@@ -68,6 +68,13 @@ export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
 
   return (
     <div className="w-full px-4 py-3">
+      {/* Mode indicator above the slider - positioned top right */}
+      <div className="flex justify-end items-center mb-2 px-1">
+        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50">
+          {scopeOptions[currentIndex].label}
+        </span>
+      </div>
+      
       <div 
         ref={sliderRef}
         className="relative h-8 w-full select-none touch-none flex items-center"
@@ -111,21 +118,27 @@ export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
         </motion.div>
       </div>
       
-      {/* Indicator Dots - No labels, just dots */}
+      {/* Indicator Dots with labels */}
       <div className="flex justify-between mt-2 px-1">
         {scopeOptions.map((opt, i) => (
-          <motion.div 
-            key={opt.value}
-            className={`w-1.5 h-1.5 rounded-full ${
-              currentIndex === i 
-                ? 'bg-blue-500' 
-                : 'bg-gray-300 dark:bg-gray-600'
-            }`}
-            animate={{ 
-              scale: currentIndex === i ? 1.3 : 1,
-              opacity: currentIndex === i ? 1 : 0.5
-            }}
-          />
+          <div key={opt.value} className="flex flex-col items-center">
+            <motion.div 
+              className={`w-1.5 h-1.5 rounded-full ${
+                currentIndex === i 
+                  ? 'bg-blue-500' 
+                  : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+              animate={{ 
+                scale: currentIndex === i ? 1.3 : 1,
+                opacity: currentIndex === i ? 1 : 0.5
+              }}
+            />
+            {i > 0 && i < 3 && (
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                {opt.label}
+              </span>
+            )}
+          </div>
         ))}
       </div>
     </div>
