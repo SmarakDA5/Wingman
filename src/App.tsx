@@ -26,8 +26,11 @@ const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (!isCheckingSubscription && !isSubscriptionActive) {
+    // Only show modal if subscription check is complete AND user has no subscription
+    if (!isCheckingSubscription && isSubscriptionActive === false) {
       setShowSubscriptionModal(true);
+    } else if (!isCheckingSubscription && isSubscriptionActive === true) {
+      setShowSubscriptionModal(false);
     }
   }, [isSubscriptionActive, isCheckingSubscription]);
 
