@@ -1,5 +1,2 @@
 # Wingman
-# Wingman
-# Wingman
-# Wingman
-# Wingman
+All around help for students
