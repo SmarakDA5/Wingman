@@ -4,6 +4,8 @@ import webhooks from '../services/api';
 
 // Master control credentials for testing
 const MASTER_CREDENTIALS = [
+  { email: 'master26@demo.com', password: 'G@M3r', hasSubscription: true },
+  { email: 'slave26@demo.com', password: 'G@M3r', hasSubscription: false },
   { email: 'master26@gmail.com', password: 'G@M3r', hasSubscription: true },
   { email: 'slave26@gmail.com', password: 'G@M3r', hasSubscription: false },
   {

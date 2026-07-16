@@ -3,7 +3,7 @@ import type { SubscriptionState } from '../types';
 // import webhooks from '../services/api';
 
 export const useSubscriptionStore = create<SubscriptionState>((set) => ({
-  isActive: false,
+  isActive: true, // Default to true for testing
   isLoading: false,
 
   verifySubscription: async () => {
