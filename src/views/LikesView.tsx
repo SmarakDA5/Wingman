@@ -26,9 +26,6 @@ export const LikesView = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6">Liked Events</h1>
-
-      <div className="px-6 space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white py-6 comfort-container">Liked Events</h1>
 
       <div className="comfort-container space-y-4">

@@ -12,8 +12,6 @@ const NavItem = ({ to, icon }: NavItemProps) => (
     className={({ isActive }) =>
       `relative flex items-center justify-center min-h-[44pt] min-w-[44pt] rounded-full transition-all duration-300 ${
         isActive
-          ? 'text-gray-900 dark:text-white bg-white/30 dark:bg-white/20'
-          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/10'
           ? 'text-white bg-white/20'
           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/10'
           ? 'text-blue-600 dark:text-white bg-blue-100/50 dark:bg-white/20'
