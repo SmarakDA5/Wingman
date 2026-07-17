@@ -5,12 +5,20 @@ import { ScopeSlider } from '../components/ScopeSlider';
 import { EventCard } from '../components/EventCard';
 
 export const DashboardView = () => {
-  const { scope, internships, schemes, jobs, setScope, fetchInternships, fetchSchemes, fetchJobs, toggleLike } = useDashboardStore();
+  const { scope, internships, schemes, jobs, courses, setScope, fetchInternships, fetchSchemes, fetchJobs, fetchCourses, toggleLike } = useDashboardStore();
 
   useEffect(() => {
-    fetchInternships();
-    fetchSchemes();
-    fetchJobs();
+    // Use Promise.allSettled for concurrency management - prevents singular endpoint failures from crashing the view
+    const fetchAllData = async () => {
+      await Promise.allSettled([
+        fetchInternships(),
+        fetchSchemes(),
+        fetchJobs(),
+        fetchCourses(),
+      ]);
+    };
+    
+    fetchAllData();
   }, [scope]);
 
   return (
@@ -129,6 +137,43 @@ export const DashboardView = () => {
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400 text-center py-8">No jobs found</p>
+          )}
+        </section>
+
+        {/* Courses and Certifications Section */}
+        <section>
+          <motion.h2 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-xl font-semibold text-gray-900 dark:text-white mb-4"
+          >
+            Courses and Certifications
+          </motion.h2>
+          {courses.length > 0 ? (
+            <div className="space-y-4">
+              {courses.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <EventCard
+                    id={item.id}
+                    title={item.title}
+                    subtitle={item.provider}
+                    deadline={item.deadline || ''}
+                    isLiked={item.isLiked}
+                    applicationUrl={item.applicationUrl}
+                    videoUrl={item.videoUrl}
+                    onLikeToggle={(id, isLiked) => toggleLike(id, 'course', isLiked)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No courses found</p>
           )}
         </section>
       </div>

@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// Vercel Patch: Use absolute Render URIs directly via environment variable
+// This bypasses Vercel's 10s Serverless Function timeout constraint
+const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5678/webhook';
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: N8N_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -34,7 +36,6 @@ apiClient.interceptors.response.use(
 );
 
 // Webhook identifiers as per specification
-// Keep these endpoints commented for later backend integration
 export const WEBHOOKS = {
   // WH0: Signup Submission - POST /verify_email_availability
   // WH1: Post-WH0 Success - POST /register_user
@@ -47,6 +48,7 @@ export const WEBHOOKS = {
   // WH8: Heart Icon Click - POST /sync_like_mutation
   // WH9: Info Tab Mount - GET /fetch_questionnaire
   // WH10: Info Update Click - POST /update_user_info
+  // WH11: Dashboard Mount - GET /fetch_courses
   WH0: { method: 'POST', endpoint: '/verify_email_availability' },
   WH1: { method: 'POST', endpoint: '/register_user' },
   WH2: { method: 'POST', endpoint: '/authenticate_user' },
@@ -58,6 +60,7 @@ export const WEBHOOKS = {
   WH8: { method: 'POST', endpoint: '/sync_like_mutation' },
   WH9: { method: 'GET', endpoint: '/fetch_questionnaire' },
   WH10: { method: 'POST', endpoint: '/update_user_info' },
+  WH11: { method: 'GET', endpoint: '/fetch_courses' },
 } as const;
 
 // Webhook execution functions
@@ -88,63 +91,49 @@ export const webhooks = {
 
   // WH4: Fetch internships
   fetchInternships: async (scope: string): Promise<{ internships: any[] }> => {
-    // WH4: Fetch internships with scope param
-    // Endpoint: GET /fetch_internships?scope={scope}
-    // Expected response: { internships: Internship[] }
     const response = await apiClient.get(WEBHOOKS.WH4.endpoint, { params: { scope } });
     return response.data;
   },
 
   // WH5: Fetch schemes
   fetchSchemes: async (scope: string): Promise<{ schemes: any[] }> => {
-    // WH5: Fetch schemes with scope param
-    // Endpoint: GET /fetch_schemes?scope={scope}
-    // Expected response: { schemes: Scheme[] }
     const response = await apiClient.get(WEBHOOKS.WH5.endpoint, { params: { scope } });
     return response.data;
   },
 
   // WH6: Fetch jobs
   fetchJobs: async (scope: string): Promise<{ jobs: any[] }> => {
-    // WH6: Fetch jobs with scope param
-    // Endpoint: GET /fetch_jobs?scope={scope}
-    // Expected response: { jobs: Job[] }
     const response = await apiClient.get(WEBHOOKS.WH6.endpoint, { params: { scope } });
     return response.data;
   },
 
   // WH7: Fetch liked events
-  fetchLikedEvents: async (): Promise<{ items: any[] }> => {
-    // WH7: Fetch liked events
-    // Endpoint: GET /fetch_liked_events
-    // Expected response: { items: (Internship | Scheme | Job)[] }
+  fetchLikedEvents: async (): Promise<{ items: any[]; courses?: any[] }> => {
     const response = await apiClient.get(WEBHOOKS.WH7.endpoint);
     return response.data;
   },
 
   // WH8: Sync like mutation
-  syncLikeMutation: async (itemId: string, isLiked: boolean, type: 'internship' | 'scheme' | 'job'): Promise<void> => {
-    // WH8: Sync like mutation
-    // Endpoint: POST /sync_like_mutation
-    // Payload: { itemId: string, isLiked: boolean, type: 'internship' | 'scheme' | 'job' }
-    await apiClient.post(WEBHOOKS.WH8.endpoint, { itemId, isLiked, type });
+  syncLikeMutation: async (itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course'): Promise<void> => {
+    // Updated payload to accept item_type: 'course'
+    await apiClient.post(WEBHOOKS.WH8.endpoint, { itemId, isLiked, itemType });
   },
 
   // WH9: Fetch questionnaire
   fetchQuestionnaire: async (): Promise<{ questions: any[] }> => {
-    // WH9: Fetch questionnaire
-    // Endpoint: GET /fetch_questionnaire
-    // Expected response: { questions: QuestionnaireQuestion[] }
     const response = await apiClient.get(WEBHOOKS.WH9.endpoint);
     return response.data;
   },
 
   // WH10: Update user info
   updateUserInfo: async (answers: Record<string, string>): Promise<void> => {
-    // WH10: Update user info
-    // Endpoint: POST /update_user_info
-    // Payload: { answers: Record<string, string> }
     await apiClient.post(WEBHOOKS.WH10.endpoint, { answers });
+  },
+
+  // WH11: Fetch courses
+  fetchCourses: async (scope: string): Promise<{ courses: any[] }> => {
+    const response = await apiClient.get(WEBHOOKS.WH11.endpoint, { params: { scope } });
+    return response.data;
   },
 };
 

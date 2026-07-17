@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { DashboardState, ScopeLevel, Internship, Scheme, Job } from '../types';
+import type { DashboardState, ScopeLevel, Internship, Scheme, Job, Course } from '../types';
 // import webhooks from '../services/api';
 
 // ============================================================================
@@ -87,6 +87,33 @@ const MOCK_JOBS: Job[] = [
     isLiked: false,
   },
 ];
+
+const MOCK_COURSES: Course[] = [
+  {
+    id: 'course-001',
+    title: 'Advanced React Patterns',
+    provider: 'Frontend Masters',
+    deadline: '2025-05-01T23:59:59Z',
+    isLiked: false,
+    applicationUrl: 'https://frontendmasters.com/courses/advanced-react',
+    videoUrl: 'https://youtube.com/watch?v=react-course',
+  },
+  {
+    id: 'course-002',
+    title: 'Machine Learning Fundamentals',
+    provider: 'Coursera',
+    isLiked: true,
+    applicationUrl: 'https://coursera.org/learn/machine-learning',
+  },
+  {
+    id: 'course-003',
+    title: 'UI/UX Design Principles',
+    provider: 'Udemy',
+    deadline: '2025-06-15T23:59:59Z',
+    isLiked: false,
+    videoUrl: 'https://youtube.com/watch?v=ux-design',
+  },
+];
 // ============================================================================
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
@@ -94,6 +121,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   internships: [],
   schemes: [],
   jobs: [],
+  courses: [],
   isLoading: false,
 
   setScope: (scope: ScopeLevel) => {
@@ -102,6 +130,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     get().fetchInternships();
     get().fetchSchemes();
     get().fetchJobs();
+    get().fetchCourses();
   },
 
   fetchInternships: async () => {
@@ -173,7 +202,30 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     }
   },
 
-  toggleLike: async (id: string, type: 'internship' | 'scheme' | 'job', isLiked: boolean) => {
+  fetchCourses: async () => {
+    set({ isLoading: true });
+    try {
+      // WH11: Fetch courses with scope param
+      // Endpoint: GET <N8N_RENDER_URL>/webhook/fetch_courses?scope=${scope}
+      // Expected response: { courses: Course[] }
+      // const { courses } = await webhooks.fetchCourses(get().scope);
+      
+      // ==========================================================================
+      // MOCK DATA - Remove when backend is connected
+      // ==========================================================================
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const courses = MOCK_COURSES;
+      // ==========================================================================
+      
+      set({ courses, isLoading: false });
+    } catch (error) {
+      set({ isLoading: false });
+      console.error('Failed to fetch courses:', error);
+    }
+  },
+
+  toggleLike: async (id: string, type: 'internship' | 'scheme' | 'job' | 'course', isLiked: boolean) => {
     // Optimistic UI update
     if (type === 'internship') {
       set((state) => ({
@@ -193,12 +245,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           item.id === id ? { ...item, isLiked: !isLiked } : item
         ),
       }));
+    } else if (type === 'course') {
+      set((state) => ({
+        courses: state.courses.map((item) =>
+          item.id === id ? { ...item, isLiked: !isLiked } : item
+        ),
+      }));
     }
 
     try {
       // WH8: Sync like mutation
       // Endpoint: POST /sync_like_mutation
-      // Payload: { itemId: string, isLiked: boolean, type: 'internship' | 'scheme' | 'job' }
+      // Payload: { itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course' }
       // await webhooks.syncLikeMutation(id, !isLiked, type);
       
       // ==========================================================================
@@ -225,6 +283,12 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       } else if (type === 'job') {
         set((state) => ({
           jobs: state.jobs.map((item) =>
+            item.id === id ? { ...item, isLiked: isLiked } : item
+          ),
+        }));
+      } else if (type === 'course') {
+        set((state) => ({
+          courses: state.courses.map((item) =>
             item.id === id ? { ...item, isLiked: isLiked } : item
           ),
         }));

@@ -34,6 +34,16 @@ export interface Job {
   videoUrl?: string;
 }
 
+export interface Course {
+  id: string;
+  title: string;
+  provider: string;
+  deadline?: string;
+  isLiked: boolean;
+  applicationUrl?: string;
+  videoUrl?: string;
+}
+
 export type ScopeLevel = 'specific' | 'broad' | 'broader' | 'explore';
 
 export interface QuestionnaireQuestion {
@@ -65,16 +75,18 @@ export interface DashboardState {
   internships: Internship[];
   schemes: Scheme[];
   jobs: Job[];
+  courses: Course[];
   isLoading: boolean;
   setScope: (scope: ScopeLevel) => void;
   fetchInternships: () => Promise<void>;
   fetchSchemes: () => Promise<void>;
   fetchJobs: () => Promise<void>;
-  toggleLike: (id: string, type: 'internship' | 'scheme' | 'job', isLiked: boolean) => Promise<void>;
+  fetchCourses: () => Promise<void>;
+  toggleLike: (id: string, type: 'internship' | 'scheme' | 'job' | 'course', isLiked: boolean) => Promise<void>;
 }
 
 export interface LikesState {
-  likedItems: (Internship | Scheme | Job)[];
+  likedItems: (Internship | Scheme | Job | Course)[];
   isLoading: boolean;
   fetchLikedItems: () => Promise<void>;
 }
