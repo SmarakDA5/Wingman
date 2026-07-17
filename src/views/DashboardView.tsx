@@ -3,30 +3,30 @@ import { motion } from 'framer-motion';
 import { useDashboardStore } from '../stores/dashboardStore';
 import { ScopeSlider } from '../components/ScopeSlider';
 import { EventCard } from '../components/EventCard';
+import type { FeedItem } from '../types';
 
 export const DashboardView = () => {
-  const { scope, internships, schemes, jobs, courses, setScope, fetchInternships, fetchSchemes, fetchJobs, fetchCourses, toggleLike } = useDashboardStore();
+  const { sliderValue, setSliderValue, initializeData, isInitialized, getFilteredInternships, getFilteredSchemes, getFilteredJobs, getFilteredCourses, toggleLike } = useDashboardStore();
 
   useEffect(() => {
-    // Use Promise.allSettled for concurrency management - prevents singular endpoint failures from crashing the view
-    const fetchAllData = async () => {
-      await Promise.allSettled([
-        fetchInternships(),
-        fetchSchemes(),
-        fetchJobs(),
-        fetchCourses(),
-      ]);
-    };
-    
-    fetchAllData();
-  }, [scope]);
+    // Initialize data once on mount - fetch all data without scope filtering
+    if (!isInitialized) {
+      initializeData();
+    }
+  }, [isInitialized, initializeData]);
+
+  // Get filtered items using computed selectors tied to sliderValue
+  const internships: FeedItem[] = getFilteredInternships();
+  const schemes: FeedItem[] = getFilteredSchemes();
+  const jobs: FeedItem[] = getFilteredJobs();
+  const courses: FeedItem[] = getFilteredCourses();
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pb-24 transition-colors duration-500">
       <div className="max-w-2xl mx-auto">
         <div className="glass-card shadow-sm backdrop-blur-xl">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6">Dashboard</h1>
-          <ScopeSlider value={scope} onChange={setScope} />
+          <ScopeSlider value={sliderValue} onChange={setSliderValue} />
         </div>
 
         <div className="px-6 py-6 space-y-8">
@@ -41,7 +41,7 @@ export const DashboardView = () => {
           </motion.h2>
           {internships.length > 0 ? (
             <div className="space-y-4">
-              {internships.map((item, index) => (
+              {internships.map((item: FeedItem, index: number) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -49,14 +49,8 @@ export const DashboardView = () => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <EventCard
-                    id={item.id}
-                    title={item.title}
-                    subtitle={item.company}
-                    deadline={item.deadline}
-                    isLiked={item.isLiked}
-                    applicationUrl={item.applicationUrl}
-                    videoUrl={item.videoUrl}
-                    onLikeToggle={(id, isLiked) => toggleLike(id, 'internship', isLiked)}
+                    item={item}
+                    onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, 'internships', isLiked)}
                   />
                 </motion.div>
               ))}
@@ -78,7 +72,7 @@ export const DashboardView = () => {
           </motion.h2>
           {schemes.length > 0 ? (
             <div className="space-y-4">
-              {schemes.map((item, index) => (
+              {schemes.map((item: FeedItem, index: number) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -86,14 +80,8 @@ export const DashboardView = () => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <EventCard
-                    id={item.id}
-                    title={item.title}
-                    subtitle={item.organization}
-                    deadline={item.deadline}
-                    isLiked={item.isLiked}
-                    applicationUrl={item.applicationUrl}
-                    videoUrl={item.videoUrl}
-                    onLikeToggle={(id, isLiked) => toggleLike(id, 'scheme', isLiked)}
+                    item={item}
+                    onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, 'schemes', isLiked)}
                   />
                 </motion.div>
               ))}
@@ -115,7 +103,7 @@ export const DashboardView = () => {
           </motion.h2>
           {jobs.length > 0 ? (
             <div className="space-y-4">
-              {jobs.map((item, index) => (
+              {jobs.map((item: FeedItem, index: number) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -123,14 +111,8 @@ export const DashboardView = () => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <EventCard
-                    id={item.id}
-                    title={item.title}
-                    subtitle={item.company}
-                    deadline={item.deadline}
-                    isLiked={item.isLiked}
-                    applicationUrl={item.applicationUrl}
-                    videoUrl={item.videoUrl}
-                    onLikeToggle={(id, isLiked) => toggleLike(id, 'job', isLiked)}
+                    item={item}
+                    onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, 'jobs', isLiked)}
                   />
                 </motion.div>
               ))}
@@ -152,7 +134,7 @@ export const DashboardView = () => {
           </motion.h2>
           {courses.length > 0 ? (
             <div className="space-y-4">
-              {courses.map((item, index) => (
+              {courses.map((item: FeedItem, index: number) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -160,14 +142,8 @@ export const DashboardView = () => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <EventCard
-                    id={item.id}
-                    title={item.title}
-                    subtitle={item.provider}
-                    deadline={item.deadline || ''}
-                    isLiked={item.isLiked}
-                    applicationUrl={item.applicationUrl}
-                    videoUrl={item.videoUrl}
-                    onLikeToggle={(id, isLiked) => toggleLike(id, 'course', isLiked)}
+                    item={item}
+                    onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, 'courses', isLiked)}
                   />
                 </motion.div>
               ))}

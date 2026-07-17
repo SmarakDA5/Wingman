@@ -63,6 +63,24 @@ export const WEBHOOKS = {
   WH11: { method: 'GET', endpoint: '/fetch_courses' },
 } as const;
 
+import type { FeedItem } from '../types';
+
+interface FetchInternshipsResponse {
+  internships: FeedItem[];
+}
+
+interface FetchSchemesResponse {
+  schemes: FeedItem[];
+}
+
+interface FetchJobsResponse {
+  jobs: FeedItem[];
+}
+
+interface FetchCoursesResponse {
+  courses: FeedItem[];
+}
+
 // Webhook execution functions
 export const webhooks = {
   // WH0: Verify email availability
@@ -89,33 +107,32 @@ export const webhooks = {
     return response.data;
   },
 
-  // WH4: Fetch internships
-  fetchInternships: async (scope: string): Promise<{ internships: any[] }> => {
-    const response = await apiClient.get(WEBHOOKS.WH4.endpoint, { params: { scope } });
+  // WH4: Fetch internships - no scope param, client-side filtering only
+  fetchInternships: async (): Promise<FetchInternshipsResponse> => {
+    const response = await apiClient.get(WEBHOOKS.WH4.endpoint);
     return response.data;
   },
 
-  // WH5: Fetch schemes
-  fetchSchemes: async (scope: string): Promise<{ schemes: any[] }> => {
-    const response = await apiClient.get(WEBHOOKS.WH5.endpoint, { params: { scope } });
+  // WH5: Fetch schemes - no scope param, client-side filtering only
+  fetchSchemes: async (): Promise<FetchSchemesResponse> => {
+    const response = await apiClient.get(WEBHOOKS.WH5.endpoint);
     return response.data;
   },
 
-  // WH6: Fetch jobs
-  fetchJobs: async (scope: string): Promise<{ jobs: any[] }> => {
-    const response = await apiClient.get(WEBHOOKS.WH6.endpoint, { params: { scope } });
+  // WH6: Fetch jobs - no scope param, client-side filtering only
+  fetchJobs: async (): Promise<FetchJobsResponse> => {
+    const response = await apiClient.get(WEBHOOKS.WH6.endpoint);
     return response.data;
   },
 
   // WH7: Fetch liked events
-  fetchLikedEvents: async (): Promise<{ items: any[]; courses?: any[] }> => {
+  fetchLikedEvents: async (): Promise<{ items: FeedItem[]; courses?: FeedItem[] }> => {
     const response = await apiClient.get(WEBHOOKS.WH7.endpoint);
     return response.data;
   },
 
   // WH8: Sync like mutation
   syncLikeMutation: async (itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course'): Promise<void> => {
-    // Updated payload to accept item_type: 'course'
     await apiClient.post(WEBHOOKS.WH8.endpoint, { itemId, isLiked, itemType });
   },
 
@@ -130,9 +147,9 @@ export const webhooks = {
     await apiClient.post(WEBHOOKS.WH10.endpoint, { answers });
   },
 
-  // WH11: Fetch courses
-  fetchCourses: async (scope: string): Promise<{ courses: any[] }> => {
-    const response = await apiClient.get(WEBHOOKS.WH11.endpoint, { params: { scope } });
+  // WH11: Fetch courses - no scope param, client-side filtering only
+  fetchCourses: async (): Promise<FetchCoursesResponse> => {
+    const response = await apiClient.get(WEBHOOKS.WH11.endpoint);
     return response.data;
   },
 };

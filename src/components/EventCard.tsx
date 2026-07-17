@@ -1,33 +1,14 @@
 import { motion } from 'framer-motion';
+import type { FeedItem } from '../types';
 
 interface EventCardProps {
-  id: string;
-  title: string;
-  subtitle: string;
-  deadline: string;
-  isLiked: boolean;
-  applicationUrl?: string;
-  videoUrl?: string;
-  onLikeToggle: (id: string, isLiked: boolean) => void;
+  item: FeedItem;
+  onLikeToggle: (id: number, isLiked: boolean) => void;
 }
 
-export const EventCard = ({
-  id,
-  title,
-  subtitle,
-  deadline,
-  isLiked,
-  applicationUrl,
-  videoUrl,
-  onLikeToggle,
-}: EventCardProps) => {
-  const formatDate = (isoDate: string) => {
-    return new Date(isoDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+export const EventCard = ({ item, onLikeToggle }: EventCardProps) => {
+  const hasApplyUrl = !!item.apply_url;
+  const hasTutorialUrl = !!item.tutorial_url;
 
   return (
     <motion.div
@@ -39,22 +20,22 @@ export const EventCard = ({
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1 pr-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">{title}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">{item.post}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{item.comp}</p>
         </div>
         <motion.button
-          onClick={() => onLikeToggle(id, isLiked)}
+          onClick={() => onLikeToggle(item.id, false)}
           className="min-w-[44pt] min-h-[44pt] flex items-center justify-center -mr-2 -mt-2 touch-manipulation relative z-10"
-          aria-label={isLiked ? 'Unlike' : 'Like'}
+          aria-label="Like"
           whileTap={{ scale: 0.8 }}
           whileHover={{ scale: 1.1 }}
         >
           <motion.svg
-            className={`w-7 h-7 ${isLiked ? 'fill-red-500 text-red-500' : 'fill-none text-gray-400 dark:text-gray-500'}`}
+            className="w-7 h-7 fill-none text-gray-400 dark:text-gray-500"
             stroke="currentColor"
             viewBox="0 0 24 24"
             initial={false}
-            animate={{ scale: isLiked ? [1, 1.2, 1] : 1 }}
+            animate={{ scale: 1 }}
             transition={{ duration: 0.3 }}
           >
             <path
@@ -76,36 +57,75 @@ export const EventCard = ({
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        Deadline: {formatDate(deadline)}
+        Apply by: {new Date(item.apply_by).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
       </div>
 
-      {(applicationUrl || videoUrl) && (
+      {/* Button Block - Apple HIG Layout */}
+      {hasApplyUrl && hasTutorialUrl ? (
+        /* Condition C: Both URLs exist - split width evenly into two-button flex row */
         <motion.div 
           className="flex gap-2 mt-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          {applicationUrl && (
-            <a
-              href={applicationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
-            >
-              Apply Now
-            </a>
-          )}
-          {videoUrl && (
-            <a
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 glass-button hover:bg-white/60 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all hover:scale-[1.02]"
-            >
-              Watch Video
-            </a>
-          )}
+          <button
+            onClick={() => window.open(item.apply_url as string, '_blank')}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+          >
+            Apply Now
+          </button>
+          <button
+            onClick={() => window.open(item.tutorial_url as string, '_blank')}
+            className="flex-1 glass-button hover:bg-white/60 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all hover:scale-[1.02]"
+          >
+            Watch Video
+          </button>
+        </motion.div>
+      ) : hasApplyUrl ? (
+        /* Condition A: Only apply_url exists */
+        <motion.div 
+          className="mt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <button
+            onClick={() => window.open(item.apply_url as string, '_blank')}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+          >
+            Apply Now
+          </button>
+        </motion.div>
+      ) : hasTutorialUrl ? (
+        /* Condition B: Only tutorial_url exists */
+        <motion.div 
+          className="mt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <button
+            onClick={() => window.open(item.tutorial_url as string, '_blank')}
+            className="w-full glass-button hover:bg-white/60 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 text-sm font-medium py-2 px-4 rounded-xl text-center min-h-[44pt] flex items-center justify-center transition-all hover:scale-[1.02]"
+          >
+            Watch Video
+          </button>
+        </motion.div>
+      ) : (
+        /* Condition D: Both URLs missing - show "See Source" fallback link */
+        <motion.div 
+          className="mt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <a
+            href="#"
+            className="text-sm text-gray-500 dark:text-gray-400 underline hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          >
+            See Source
+          </a>
         </motion.div>
       )}
     </motion.div>
