@@ -176,6 +176,15 @@ export const DashboardView = () => {
             <p className="text-gray-500 dark:text-gray-400 text-center py-8">No courses found</p>
           )}
         </section>
+
+        {/* Info Note Section */}
+        <section className="pb-8">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
+              Any changes made in the interest slider will take effect on the next refresh
+            </p>
+          </div>
+        </section>
       </div>
     </div>
   </div>
