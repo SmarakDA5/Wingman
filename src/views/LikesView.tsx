@@ -5,22 +5,24 @@ import { EventCard } from '../components/EventCard';
 
 export const LikesView = () => {
   const { likedItems } = useLikesStore();
-  const { toggleLike, internships, schemes, jobs } = useDashboardStore();
+  const { toggleLike, internships, schemes, jobs, courses } = useDashboardStore();
   const [localLikedItems, setLocalLikedItems] = useState(likedItems);
 
-  // Update local state when dashboard likes change
+  // Update local state when dashboard likes change - includes courses
   useEffect(() => {
     const allLiked = [
       ...internships.filter(item => item.isLiked),
       ...schemes.filter(item => item.isLiked),
       ...jobs.filter(item => item.isLiked),
+      ...courses.filter(item => item.isLiked),
     ];
     setLocalLikedItems(allLiked);
-  }, [internships, schemes, jobs]);
+  }, [internships, schemes, jobs, courses]);
 
-  const getItemType = (item: any): 'internship' | 'scheme' | 'job' => {
+  const getItemType = (item: any): 'internship' | 'scheme' | 'job' | 'course' => {
     if ('company' in item && item.company) return 'internship';
     if ('organization' in item) return 'scheme';
+    if ('provider' in item) return 'course';
     return 'job';
   };
 
@@ -36,8 +38,8 @@ export const LikesView = () => {
               key={item.id}
               id={item.id}
               title={item.title}
-              subtitle={'company' in item ? item.company : item.organization}
-              deadline={item.deadline}
+              subtitle={'company' in item ? item.company : ('organization' in item ? item.organization : item.provider)}
+              deadline={item.deadline || ''}
               isLiked={item.isLiked}
               applicationUrl={item.applicationUrl}
               videoUrl={item.videoUrl}

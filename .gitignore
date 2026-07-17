@@ -1,82 +1,46 @@
-```gitignore
-# Dependencies
-node_modules/
-.pnpm-store/
-.npm/
-.yarn/
-
-# Build outputs
+```
+# Build artifacts
 dist/
 build/
-coverage/
-.eslintcache
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
-# Logs
-*.log
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+target/
+.gradle/
 
-# Environment variables
-.env
-.env.local
-.env.*
-
-# IDE specific
+# Editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
 
-# OS generated
+# Logs
+*.log
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# System files
 .DS_Store
 Thumbs.db
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-
-# TypeScript/JavaScript
-*.tsbuildinfo
-*.js.map
-*.jsx.map
-*.ts.map
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.orig
-*.rej
-
-# Archives
-*.zip
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.gz
-*.rar
-*.7z
-*.bz2
-*.xz
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
 ```
