@@ -2,28 +2,30 @@ import { useEffect, useState } from 'react';
 import { useLikesStore } from '../stores/likesStore';
 import { useDashboardStore } from '../stores/dashboardStore';
 import { EventCard } from '../components/EventCard';
+import type { FeedItem } from '../types';
 
 export const LikesView = () => {
   const { likedItems } = useLikesStore();
-  const { toggleLike, internships, schemes, jobs, courses } = useDashboardStore();
-  const [localLikedItems, setLocalLikedItems] = useState(likedItems);
-
-  // Update local state when dashboard likes change - includes courses
+  const { cache, toggleLike } = useDashboardStore();
+  const [localLikedItems, setLocalLikedItems] = useState<FeedItem[]>(likedItems);
+  
+  // Update local state when dashboard likes change
   useEffect(() => {
-    const allLiked = [
-      ...internships.filter(item => item.isLiked),
-      ...schemes.filter(item => item.isLiked),
-      ...jobs.filter(item => item.isLiked),
-      ...courses.filter(item => item.isLiked),
+    const allLiked: FeedItem[] = [
+      ...cache.internships.filter((item: FeedItem) => item.isLiked),
+      ...cache.schemes.filter((item: FeedItem) => item.isLiked),
+      ...cache.jobs.filter((item: FeedItem) => item.isLiked),
+      ...cache.courses.filter((item: FeedItem) => item.isLiked),
     ];
     setLocalLikedItems(allLiked);
-  }, [internships, schemes, jobs, courses]);
+  }, [cache.internships, cache.schemes, cache.jobs, cache.courses]);
 
-  const getItemType = (item: any): 'internship' | 'scheme' | 'job' | 'course' => {
-    if ('company' in item && item.company) return 'internship';
-    if ('organization' in item) return 'scheme';
-    if ('provider' in item) return 'course';
-    return 'job';
+  const getItemType = (item: FeedItem): keyof typeof cache => {
+    // Use content to determine type
+    if (item.post.includes('Internship') || item.comp.includes('Intern')) return 'internships';
+    if (item.post.includes('Scheme') || item.post.includes('Scholarship')) return 'schemes';
+    if (item.post.includes('Course') || item.post.includes('Certification')) return 'courses';
+    return 'jobs';
   };
 
   return (
@@ -33,17 +35,11 @@ export const LikesView = () => {
 
         <div className="px-6 space-y-4">
         {localLikedItems.length > 0 ? (
-          localLikedItems.map((item) => (
+          localLikedItems.map((item: FeedItem) => (
             <EventCard
               key={item.id}
-              id={item.id}
-              title={item.title}
-              subtitle={'company' in item ? item.company : ('organization' in item ? item.organization : item.provider)}
-              deadline={item.deadline || ''}
-              isLiked={item.isLiked}
-              applicationUrl={item.applicationUrl}
-              videoUrl={item.videoUrl}
-              onLikeToggle={(id, isLiked) => toggleLike(id, getItemType(item), isLiked)}
+              item={item}
+              onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, getItemType(item), isLiked)}
             />
           ))
         ) : (

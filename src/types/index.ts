@@ -4,47 +4,18 @@ export interface User {
   isAuthenticated: boolean;
 }
 
-export interface Internship {
-  id: string;
-  title: string;
-  company: string;
-  deadline: string;
-  isLiked: boolean;
-  applicationUrl?: string;
-  videoUrl?: string;
+export interface FeedItem {
+  id: number;
+  post: string;
+  comp: string;
+  apply_url: string | null;
+  tutorial_url: string | null;
+  scope_tier: number; // 0, 1, 2, 3
+  apply_by: string;
+  isLiked?: boolean;
 }
 
-export interface Scheme {
-  id: string;
-  title: string;
-  organization: string;
-  deadline: string;
-  isLiked: boolean;
-  applicationUrl?: string;
-  videoUrl?: string;
-}
-
-export interface Job {
-  id: string;
-  title: string;
-  company: string;
-  deadline: string;
-  isLiked: boolean;
-  applicationUrl?: string;
-  videoUrl?: string;
-}
-
-export interface Course {
-  id: string;
-  title: string;
-  provider: string;
-  deadline?: string;
-  isLiked: boolean;
-  applicationUrl?: string;
-  videoUrl?: string;
-}
-
-export type ScopeLevel = 'specific' | 'broad' | 'broader' | 'explore';
+export type ScopeLevel = 0 | 1 | 2 | 3;
 
 export interface QuestionnaireQuestion {
   id: string;
@@ -70,23 +41,29 @@ export interface SubscriptionState {
   verifySubscription: () => Promise<boolean>;
 }
 
+export interface DashboardCache {
+  internships: FeedItem[];
+  schemes: FeedItem[];
+  jobs: FeedItem[];
+  courses: FeedItem[];
+}
+
 export interface DashboardState {
-  scope: ScopeLevel;
-  internships: Internship[];
-  schemes: Scheme[];
-  jobs: Job[];
-  courses: Course[];
+  sliderValue: ScopeLevel;
+  cache: DashboardCache;
   isLoading: boolean;
-  setScope: (scope: ScopeLevel) => void;
-  fetchInternships: () => Promise<void>;
-  fetchSchemes: () => Promise<void>;
-  fetchJobs: () => Promise<void>;
-  fetchCourses: () => Promise<void>;
-  toggleLike: (id: string, type: 'internship' | 'scheme' | 'job' | 'course', isLiked: boolean) => Promise<void>;
+  isInitialized: boolean;
+  setSliderValue: (value: ScopeLevel) => void;
+  initializeData: () => Promise<void>;
+  toggleLike: (id: number, type: keyof DashboardCache, isLiked: boolean) => Promise<void>;
+  getFilteredInternships: () => FeedItem[];
+  getFilteredSchemes: () => FeedItem[];
+  getFilteredJobs: () => FeedItem[];
+  getFilteredCourses: () => FeedItem[];
 }
 
 export interface LikesState {
-  likedItems: (Internship | Scheme | Job | Course)[];
+  likedItems: FeedItem[];
   isLoading: boolean;
   fetchLikedItems: () => Promise<void>;
 }

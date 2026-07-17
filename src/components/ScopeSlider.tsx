@@ -8,10 +8,10 @@ interface ScopeSliderProps {
 }
 
 const scopeOptions: { value: ScopeLevel; label: string }[] = [
-  { value: 'specific', label: 'Specific' },
-  { value: 'broad', label: 'Broad' },
-  { value: 'broader', label: 'Broader' },
-  { value: 'explore', label: 'Unrestricted' },
+  { value: 0, label: 'Specific' },
+  { value: 1, label: 'Broad' },
+  { value: 2, label: 'Broader' },
+  { value: 3, label: 'Unrestricted' },
 ];
 
 export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
@@ -38,14 +38,14 @@ export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
     const percentage = x / rect.width;
     
-    let newIndex = 0;
+    let newIndex: ScopeLevel = 0;
     if (percentage > 0.875) newIndex = 3;
     else if (percentage > 0.625) newIndex = 2;
     else if (percentage > 0.375) newIndex = 1;
     else newIndex = 0;
     
     if (newIndex !== currentIndex) {
-      onChange(scopeOptions[newIndex].value);
+      onChange(newIndex);
     }
   };
 
