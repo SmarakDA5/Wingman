@@ -12,7 +12,8 @@ export interface ProfileAnswers {
   field?: string;
   skill?: string;
   goal?: string;
-  [key: string]: string | undefined;
+  interest_level?: number; // Maps to backend scope_tier (0-3)
+  [key: string]: string | number | undefined;
 }
 
 export interface ProfileState {
@@ -20,10 +21,12 @@ export interface ProfileState {
   isLoading: boolean;
   isInitialized: boolean;
   fetchProfile: () => Promise<void>;
+  setInterestLevel: (level: number) => Promise<void>;
 }
 
 export interface ProfileStore extends ProfileState {
   isProfileValid: boolean;
+  interestLevel: number;
 }
 
 /**
@@ -61,16 +64,35 @@ export const useProfileStore = create<ProfileStore>()(
         return validateProfileAnswers(get().answers);
       },
 
+      // Computed property for interest level (defaults to 0 if not set)
+      get interestLevel() {
+        return get().answers.interest_level ?? 0;
+      },
+
       fetchProfile: async () => {
         set({ isLoading: true });
         try {
           const response = await webhooks.fetchQuestionnaire();
           // WH9 returns answers JSONB object for fixed onboarding questions
+          // Includes edu, field, skill, goal, and interest_level (mapped to scope_tier)
           const answers = response.answers || {};
           set({ answers, isInitialized: true, isLoading: false });
         } catch (error) {
           console.error('Failed to fetch profile:', error);
           set({ isInitialized: true, isLoading: false });
+        }
+      },
+
+      setInterestLevel: async (level: number) => {
+        const currentAnswers = get().answers;
+        const updatedAnswers = { ...currentAnswers, interest_level: level };
+        set({ answers: updatedAnswers });
+        
+        // Persist to backend via WH10
+        try {
+          await webhooks.updateUserInfo({ interest_level: String(level) });
+        } catch (error) {
+          console.error('Failed to save interest level:', error);
         }
       },
     }),

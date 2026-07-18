@@ -37,9 +37,9 @@ export const useAuthStore = create<AuthState>()(
           );
 
           if (masterUser) {
-            // Create mock user and token for master accounts
+            // Create mock user and token for master accounts - using email as primary identifier
             const token = `master_test_token_${masterUser.email}`;
-            const user = { id: `master_${masterUser.email}`, email: masterUser.email };
+            const user = { id: masterUser.email, email: masterUser.email };
             
             set({ 
               user: { ...user, isAuthenticated: true }, 
@@ -52,6 +52,7 @@ export const useAuthStore = create<AuthState>()(
 
           // WH2: Authenticate user (for non-master users)
           const { user, token } = await webhooks.authenticateUser(email, password);
+          // Backend returns user with email as primary identifier
           set({ user: { ...user, isAuthenticated: true }, token, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });

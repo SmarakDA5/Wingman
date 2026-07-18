@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useFeedsStore, type FeedTab } from '../stores/dashboardStore';
 import { useProfileStore } from '../stores/profileStore';
@@ -14,9 +14,31 @@ const TABS: { id: FeedTab; label: string }[] = [
   { id: 'saved', label: 'Saved' },
 ];
 
+// Skeleton loader component for feed items
+const FeedSkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="glass-card rounded-2xl p-4 shadow-md border border-gray-100/50 dark:border-gray-700/50"
+  >
+    <div className="flex justify-between items-start mb-2">
+      <div className="flex-1 pr-2">
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2 animate-pulse" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse" />
+      </div>
+      <div className="w-7 h-7 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+    </div>
+    <div className="flex items-center text-xs mb-3">
+      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded mr-1 animate-pulse" />
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse" />
+    </div>
+    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
+  </motion.div>
+);
+
 export const FeedsView = () => {
   const navigate = useNavigate();
-  const { activeTab, setActiveTab, initializeFeeds, isInitialized, feeds, toggleLike } = useFeedsStore();
+  const { activeTab, setActiveTab, initializeFeeds, isInitialized, feeds, toggleLike, loadingTabs, refreshTab } = useFeedsStore();
   const { isProfileValid, fetchProfile, isInitialized: isProfileInitialized } = useProfileStore();
 
   useEffect(() => {
@@ -33,7 +55,15 @@ export const FeedsView = () => {
     }
   }, [isProfileInitialized, fetchProfile]);
 
+  useEffect(() => {
+    // Refresh tab content when tab changes and profile is valid
+    if (isProfileValid && activeTab) {
+      refreshTab(activeTab);
+    }
+  }, [activeTab, isProfileValid]);
+
   const currentFeeds: FeedItem[] = feeds[activeTab] || [];
+  const isLoadingTab = loadingTabs[activeTab] || false;
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pb-24 transition-colors duration-500">
@@ -42,7 +72,7 @@ export const FeedsView = () => {
         <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-400 p-4 mx-6 mt-4 rounded-xl">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">
-              Please complete your profile to access feeds.
+              Complete your profile to unlock feeds.
             </p>
             <button
               onClick={() => navigate('/app/info')}
@@ -107,27 +137,52 @@ export const FeedsView = () => {
               {TABS.find((t) => t.id === activeTab)?.label}
             </motion.h2>
             
-            {currentFeeds.length > 0 ? (
-              <div className="space-y-4">
-                {currentFeeds.map((item: FeedItem, index: number) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <EventCard
-                      item={item}
-                      onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, activeTab, isLiked)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                No items in this feed
-              </p>
-            )}
+            <AnimatePresence mode="wait">
+              {isLoadingTab ? (
+                <motion.div
+                  key="skeleton"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  {[...Array(3)].map((_, i) => (
+                    <FeedSkeleton key={i} />
+                  ))}
+                </motion.div>
+              ) : currentFeeds.length > 0 ? (
+                <motion.div
+                  key="content"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  {currentFeeds.map((item: FeedItem, index: number) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <EventCard
+                        item={item}
+                        onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, activeTab, isLiked, 'internship')}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.p
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-gray-500 dark:text-gray-400 text-center py-8"
+                >
+                  No items in this feed
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>

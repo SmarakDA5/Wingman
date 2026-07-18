@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import type { ScopeLevel } from '../types';
 
 interface ScopeSliderProps {
-  value: ScopeLevel;
-  onChange: (value: ScopeLevel) => void;
+  value: number;
+  onChange: (value: number) => void;
 }
 
-const scopeOptions: { value: ScopeLevel; label: string }[] = [
+const scopeOptions: { value: number; label: string }[] = [
   { value: 0, label: 'Specific' },
   { value: 1, label: 'Broad' },
   { value: 2, label: 'Broader' },
@@ -38,7 +37,7 @@ export const ScopeSlider = ({ value, onChange }: ScopeSliderProps) => {
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
     const percentage = x / rect.width;
     
-    let newIndex: ScopeLevel = 0;
+    let newIndex: number = 0;
     if (percentage > 0.875) newIndex = 3;
     else if (percentage > 0.625) newIndex = 2;
     else if (percentage > 0.375) newIndex = 1;
