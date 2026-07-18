@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useInfoStore } from '../stores/infoStore';
 import { useAuthStore } from '../stores/authStore';
+import { useProfileStore } from '../stores/profileStore';
 import type { QuestionnaireQuestion } from '../types';
 
 export const InfoView = () => {
   const navigate = useNavigate();
   const { questions, isLoading, fetchQuestions, updateUserInfo } = useInfoStore();
   const { user, logout } = useAuthStore();
+  const { isProfileValid } = useProfileStore();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -110,6 +112,23 @@ export const InfoView = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
+      {/* Profile Validity Banner */}
+      {!isProfileValid && (
+        <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-400 p-4 mx-6 mt-4 rounded-xl">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">
+              Please complete your profile questions to get recommendations.
+            </p>
+            <button
+              onClick={() => navigate('/app/info')}
+              className="text-yellow-700 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200 text-sm font-semibold underline"
+            >
+              Complete Profile
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6 comfort-container">Your Information</h1>
 

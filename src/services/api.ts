@@ -141,7 +141,7 @@ export const webhooks = {
   },
 
   // WH9: Fetch questionnaire
-  fetchQuestionnaire: async (): Promise<{ questions: any[] }> => {
+  fetchQuestionnaire: async (): Promise<{ answers: Record<string, string> }> => {
     const response = await apiClient.get(WEBHOOKS.WH9.endpoint);
     return response.data;
   },
