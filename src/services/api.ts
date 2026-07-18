@@ -10,6 +10,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 seconds timeout to accommodate backend AI rate-limit waits
 });
 
 // Request interceptor to add auth token from Zustand store
@@ -113,9 +114,10 @@ export const webhooks = {
     return response.data;
   },
 
-  // WH5: Fetch AI matched recommendations
-  fetchRecommendedFeed: async (): Promise<FetchFeedResponse> => {
-    const response = await apiClient.get(WEBHOOKS.WH5.endpoint);
+  // WH5: Fetch AI matched recommendations with scope_tier filter based on user's interest level
+  fetchRecommendedFeed: async (scopeTier?: number): Promise<FetchFeedResponse> => {
+    const params = scopeTier !== undefined ? { params: { scope_tier: scopeTier } } : {};
+    const response = await apiClient.get(WEBHOOKS.WH5.endpoint, params);
     return response.data;
   },
 
@@ -131,9 +133,9 @@ export const webhooks = {
     return response.data;
   },
 
-  // WH8: Sync like mutation
-  syncLikeMutation: async (itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course'): Promise<void> => {
-    await apiClient.post(WEBHOOKS.WH8.endpoint, { itemId, isLiked, itemType });
+  // WH8: Sync like mutation - sends email, item_id, and item_type to backend
+  syncLikeMutation: async (email: string, itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course'): Promise<void> => {
+    await apiClient.post(WEBHOOKS.WH8.endpoint, { email, itemId, isLiked, itemType });
   },
 
   // WH9: Fetch questionnaire (profile)

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { FeedItem } from '../types';
 import webhooks from '../services/api';
+import { useAuthStore } from './authStore';
+import { useProfileStore } from './profileStore';
 
 export type FeedTab = 'discover' | 'recommended' | 'trending' | 'likes' | 'saved';
 
@@ -9,9 +11,11 @@ export interface FeedsState {
   feeds: Record<FeedTab, FeedItem[]>;
   isLoading: boolean;
   isInitialized: boolean;
+  loadingTabs: Partial<Record<FeedTab, boolean>>;
   setActiveTab: (tab: FeedTab) => void;
   initializeFeeds: () => Promise<void>;
-  toggleLike: (id: number, tab: FeedTab, isLiked: boolean) => Promise<void>;
+  refreshTab: (tab: FeedTab) => Promise<void>;
+  toggleLike: (id: number, tab: FeedTab, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => Promise<void>;
 }
 
 export const useFeedsStore = create<FeedsState>((set) => ({
@@ -25,6 +29,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
   },
   isLoading: false,
   isInitialized: false,
+  loadingTabs: {},
 
   setActiveTab: (activeTab: FeedTab) => {
     set({ activeTab });
@@ -33,7 +38,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
   initializeFeeds: async () => {
     set({ isLoading: true });
     try {
-      // Sequential fetch as per specification
+      // Sequential fetch as per specification - WH4, WH5, WH6 for main feeds
       const [discoverResult, recommendedResult, trendingResult, likesResult, savedResult] = await Promise.allSettled([
         webhooks.fetchDiscoverFeed(),
         webhooks.fetchRecommendedFeed(),
@@ -59,7 +64,59 @@ export const useFeedsStore = create<FeedsState>((set) => ({
     }
   },
 
-  toggleLike: async (id: number, tab: FeedTab, isLiked: boolean) => {
+  refreshTab: async (tab: FeedTab) => {
+    const user = useAuthStore.getState().user;
+    const interestLevel = useProfileStore.getState().interestLevel;
+    
+    if (!user?.email) return;
+
+    set((state) => ({
+      loadingTabs: { ...state.loadingTabs, [tab]: true },
+    }));
+
+    try {
+      let result;
+      switch (tab) {
+        case 'discover':
+          result = await webhooks.fetchDiscoverFeed();
+          break;
+        case 'recommended':
+          // WH5: Pass user's interest_level as scope_tier query parameter
+          result = await webhooks.fetchRecommendedFeed(interestLevel);
+          break;
+        case 'trending':
+          result = await webhooks.fetchTrendingFeed();
+          break;
+        case 'likes':
+          result = await webhooks.fetchLikedItems();
+          break;
+        case 'saved':
+          result = await webhooks.fetchSavedItems();
+          break;
+        default:
+          return;
+      }
+
+      set((state) => ({
+        feeds: { ...state.feeds, [tab]: result.items },
+        loadingTabs: { ...state.loadingTabs, [tab]: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loadingTabs: { ...state.loadingTabs, [tab]: false },
+      }));
+      console.error(`Failed to refresh ${tab} feed:`, error);
+    }
+  },
+
+  toggleLike: async (id: number, tab: FeedTab, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => {
+    const user = useAuthStore.getState().user;
+    
+    if (!user?.email) {
+      console.error('User email not found');
+      return;
+    }
+
     // Optimistic UI update
     set((state) => ({
       feeds: {
@@ -71,7 +128,8 @@ export const useFeedsStore = create<FeedsState>((set) => ({
     }));
 
     try {
-      await webhooks.syncLikeMutation(String(id), !isLiked, 'internship');
+      // WH8: Send email, item_id, and item_type to backend
+      await webhooks.syncLikeMutation(user.email, String(id), !isLiked, itemType);
     } catch (error) {
       // Revert on error
       set((state) => ({

@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { useInfoStore } from '../stores/infoStore';
 import { useAuthStore } from '../stores/authStore';
 import { useProfileStore } from '../stores/profileStore';
+import { ScopeSlider } from '../components/ScopeSlider';
 import type { QuestionnaireQuestion } from '../types';
 
 export const InfoView = () => {
   const navigate = useNavigate();
   const { questions, isLoading, fetchQuestions, updateUserInfo } = useInfoStore();
   const { user, logout } = useAuthStore();
-  const { isProfileValid } = useProfileStore();
+  const { isProfileValid, interestLevel, setInterestLevel } = useProfileStore();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -32,6 +33,10 @@ export const InfoView = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  const handleInterestLevelChange = async (level: number) => {
+    await setInterestLevel(level);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -42,6 +47,7 @@ export const InfoView = () => {
       const answersWithEmail = {
         ...answers,
         email: user?.email || '',
+        interest_level: String(interestLevel),
       };
       await updateUserInfo(answersWithEmail);
       setSubmitSuccess(true);
@@ -146,6 +152,20 @@ export const InfoView = () => {
               </label>
               <div className="w-full min-h-[44pt] px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                 {user?.email || 'Not available'}
+              </div>
+            </div>
+
+            {/* Interest Level Slider - Maps to backend scope_tier (0-3) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Interest Level
+              </label>
+              <div className="liquid-glass rounded-xl p-4">
+                <ScopeSlider value={interestLevel} onChange={handleInterestLevelChange} />
+                <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <span>Local/Casual</span>
+                  <span>Global/Prestigious</span>
+                </div>
               </div>
             </div>
 
