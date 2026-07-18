@@ -41,7 +41,7 @@ export const BottomNav = () => {
         className="pointer-events-auto liquid-glass rounded-full shadow-2xl px-6 py-4 flex items-center gap-4 mx-auto max-w-md"
       >
         <NavItem
-          to="/app/dashboard"
+          to="/app/feeds"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

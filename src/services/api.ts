@@ -45,44 +45,40 @@ export const WEBHOOKS = {
   // WH1: Post-WH0 Success - POST /register_user
   // WH2: Signin Submission - POST /authenticate_user
   // WH3: Shell Mount (Global) - GET /verify_subscription
-  // WH4: Dashboard Mount - GET /fetch_internships
-  // WH5: Dashboard Mount - GET /fetch_schemes
-  // WH6: Dashboard Mount - GET /fetch_jobs
-  // WH7: Likes Mount - GET /fetch_liked_events
+  // WH4: Main Feed - GET /feeds/discover
+  // WH5: AI Matched - GET /feeds/recommended
+  // WH6: High Applicants - GET /feeds/trending
+  // WH7: User's Liked Items - GET /user/likes
   // WH8: Heart Icon Click - POST /sync_like_mutation
-  // WH9: Info Tab Mount - GET /fetch_questionnaire
+  // WH9: Fetch Profile - GET /fetch_questionnaire
   // WH10: Info Update Click - POST /update_user_info
-  // WH11: Dashboard Mount - GET /fetch_courses
+  // WH11: User's Bookmarks - GET /user/saved
   WH0: { method: 'POST', endpoint: '/verify_email_availability' },
   WH1: { method: 'POST', endpoint: '/register_user' },
   WH2: { method: 'POST', endpoint: '/authenticate_user' },
   WH3: { method: 'GET', endpoint: '/verify_subscription' },
-  WH4: { method: 'GET', endpoint: '/fetch_internships' },
-  WH5: { method: 'GET', endpoint: '/fetch_schemes' },
-  WH6: { method: 'GET', endpoint: '/fetch_jobs' },
-  WH7: { method: 'GET', endpoint: '/fetch_liked_events' },
+  WH4: { method: 'GET', endpoint: '/feeds/discover' },
+  WH5: { method: 'GET', endpoint: '/feeds/recommended' },
+  WH6: { method: 'GET', endpoint: '/feeds/trending' },
+  WH7: { method: 'GET', endpoint: '/user/likes' },
   WH8: { method: 'POST', endpoint: '/sync_like_mutation' },
   WH9: { method: 'GET', endpoint: '/fetch_questionnaire' },
   WH10: { method: 'POST', endpoint: '/update_user_info' },
-  WH11: { method: 'GET', endpoint: '/fetch_courses' },
+  WH11: { method: 'GET', endpoint: '/user/saved' },
 } as const;
 
 import type { FeedItem } from '../types';
 
-interface FetchInternshipsResponse {
-  internships: FeedItem[];
+interface FetchFeedResponse {
+  items: FeedItem[];
 }
 
-interface FetchSchemesResponse {
-  schemes: FeedItem[];
+interface FetchLikedItemsResponse {
+  items: FeedItem[];
 }
 
-interface FetchJobsResponse {
-  jobs: FeedItem[];
-}
-
-interface FetchCoursesResponse {
-  courses: FeedItem[];
+interface FetchSavedItemsResponse {
+  items: FeedItem[];
 }
 
 // Webhook execution functions
@@ -111,26 +107,26 @@ export const webhooks = {
     return response.data;
   },
 
-  // WH4: Fetch internships - no scope param, client-side filtering only
-  fetchInternships: async (): Promise<FetchInternshipsResponse> => {
+  // WH4: Fetch main feed (discover)
+  fetchDiscoverFeed: async (): Promise<FetchFeedResponse> => {
     const response = await apiClient.get(WEBHOOKS.WH4.endpoint);
     return response.data;
   },
 
-  // WH5: Fetch schemes - no scope param, client-side filtering only
-  fetchSchemes: async (): Promise<FetchSchemesResponse> => {
+  // WH5: Fetch AI matched recommendations
+  fetchRecommendedFeed: async (): Promise<FetchFeedResponse> => {
     const response = await apiClient.get(WEBHOOKS.WH5.endpoint);
     return response.data;
   },
 
-  // WH6: Fetch jobs - no scope param, client-side filtering only
-  fetchJobs: async (): Promise<FetchJobsResponse> => {
+  // WH6: Fetch trending (high applicants)
+  fetchTrendingFeed: async (): Promise<FetchFeedResponse> => {
     const response = await apiClient.get(WEBHOOKS.WH6.endpoint);
     return response.data;
   },
 
-  // WH7: Fetch liked events
-  fetchLikedEvents: async (): Promise<{ items: FeedItem[]; courses?: FeedItem[] }> => {
+  // WH7: Fetch user's liked items
+  fetchLikedItems: async (): Promise<FetchLikedItemsResponse> => {
     const response = await apiClient.get(WEBHOOKS.WH7.endpoint);
     return response.data;
   },
@@ -140,7 +136,7 @@ export const webhooks = {
     await apiClient.post(WEBHOOKS.WH8.endpoint, { itemId, isLiked, itemType });
   },
 
-  // WH9: Fetch questionnaire
+  // WH9: Fetch questionnaire (profile)
   fetchQuestionnaire: async (): Promise<{ answers: Record<string, string> }> => {
     const response = await apiClient.get(WEBHOOKS.WH9.endpoint);
     return response.data;
@@ -151,8 +147,8 @@ export const webhooks = {
     await apiClient.post(WEBHOOKS.WH10.endpoint, { answers });
   },
 
-  // WH11: Fetch courses - no scope param, client-side filtering only
-  fetchCourses: async (): Promise<FetchCoursesResponse> => {
+  // WH11: Fetch user's saved/bookmarked items
+  fetchSavedItems: async (): Promise<FetchSavedItemsResponse> => {
     const response = await apiClient.get(WEBHOOKS.WH11.endpoint);
     return response.data;
   },

@@ -9,7 +9,7 @@ import { SubscriptionModal } from './components/SubscriptionModal';
 import { LandingView } from './views/LandingView';
 import { SignupView } from './views/SignupView';
 import { SigninView } from './views/SigninView';
-import { DashboardView } from './views/DashboardView';
+import { FeedsView } from './views/FeedsView';
 import { LikesView } from './views/LikesView';
 import { InfoView } from './views/InfoView';
 import './App.css';
@@ -105,8 +105,8 @@ function App() {
         
         {/* Protected Routes */}
         <Route path="/app" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/app/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardView />} />
+          <Route index element={<Navigate to="/app/feeds" replace />} />
+          <Route path="feeds" element={<FeedsView />} />
           <Route path="likes" element={<LikesView />} />
           <Route path="info" element={<InfoView />} />
         </Route>
