@@ -1,48 +1,12 @@
 ```
-# Build artifacts
-dist/
-build/
-
 # Dependencies
 node_modules/
-
+# Build artifacts
+dist/
 # Environment
 .env
 .env.local
 .env.*
-
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# Logs
-*.log
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Testing
-.pytest_cache/
-.mypy_cache/
-
-# Distribution
-*.tar.gz
-*.whl
-*.egg
-*.egg-info/
-
-# OS
-.DS_Store
-Thumbs.db
+# Package lock
+package-lock.json
 ```
