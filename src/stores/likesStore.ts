@@ -1,29 +1,27 @@
 import { create } from 'zustand';
-import type { LikesState, FeedItem } from '../types';
+import type { FeedItem } from '../types';
+import webhooks from '../services/api';
+
+export interface LikesState {
+  likedItems: FeedItem[];
+  isLoading: boolean;
+  isInitialized: boolean;
+  fetchLikedItems: () => Promise<void>;
+}
 
 export const useLikesStore = create<LikesState>((set) => ({
   likedItems: [],
   isLoading: false,
+  isInitialized: false,
 
   fetchLikedItems: async () => {
     set({ isLoading: true });
     try {
-      // WH7: Fetch liked events
-      // Import dashboard store to get current liked items
-      const dashboardState = await import('./dashboardStore').then(m => m.useDashboardStore.getState());
-      const { cache } = dashboardState;
-      
-      // Filter only liked items from all categories
-      const likedInternships: FeedItem[] = cache.internships.filter((item: FeedItem) => item.isLiked);
-      const likedSchemes: FeedItem[] = cache.schemes.filter((item: FeedItem) => item.isLiked);
-      const likedJobs: FeedItem[] = cache.jobs.filter((item: FeedItem) => item.isLiked);
-      const likedCourses: FeedItem[] = cache.courses.filter((item: FeedItem) => item.isLiked);
-      
-      const items: FeedItem[] = [...likedInternships, ...likedSchemes, ...likedJobs, ...likedCourses];
-      
-      set({ likedItems: items, isLoading: false });
+      // WH7: Fetch user's liked items from backend
+      const response = await webhooks.fetchLikedItems();
+      set({ likedItems: response.items, isLoading: false, isInitialized: true });
     } catch (error) {
-      set({ isLoading: false });
+      set({ isLoading: false, isInitialized: true });
       console.error('Failed to fetch liked items:', error);
     }
   },

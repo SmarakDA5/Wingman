@@ -1,32 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLikesStore } from '../stores/likesStore';
-import { useDashboardStore } from '../stores/dashboardStore';
 import { EventCard } from '../components/EventCard';
 import type { FeedItem } from '../types';
 
 export const LikesView = () => {
-  const { likedItems } = useLikesStore();
-  const { cache, toggleLike } = useDashboardStore();
-  const [localLikedItems, setLocalLikedItems] = useState<FeedItem[]>(likedItems);
+  const { likedItems, isLoading, fetchLikedItems } = useLikesStore();
   
-  // Update local state when dashboard likes change
   useEffect(() => {
-    const allLiked: FeedItem[] = [
-      ...cache.internships.filter((item: FeedItem) => item.isLiked),
-      ...cache.schemes.filter((item: FeedItem) => item.isLiked),
-      ...cache.jobs.filter((item: FeedItem) => item.isLiked),
-      ...cache.courses.filter((item: FeedItem) => item.isLiked),
-    ];
-    setLocalLikedItems(allLiked);
-  }, [cache.internships, cache.schemes, cache.jobs, cache.courses]);
-
-  const getItemType = (item: FeedItem): keyof typeof cache => {
-    // Use content to determine type
-    if (item.post.includes('Internship') || item.comp.includes('Intern')) return 'internships';
-    if (item.post.includes('Scheme') || item.post.includes('Scholarship')) return 'schemes';
-    if (item.post.includes('Course') || item.post.includes('Certification')) return 'courses';
-    return 'jobs';
-  };
+    fetchLikedItems();
+  }, [fetchLikedItems]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
@@ -34,12 +16,16 @@ export const LikesView = () => {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white px-6 py-6">Liked Events</h1>
 
         <div className="px-6 space-y-4">
-        {localLikedItems.length > 0 ? (
-          localLikedItems.map((item: FeedItem) => (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          </div>
+        ) : likedItems.length > 0 ? (
+          likedItems.map((item: FeedItem) => (
             <EventCard
               key={item.id}
               item={item}
-              onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, getItemType(item), isLiked)}
+              onLikeToggle={() => {}}
             />
           ))
         ) : (
