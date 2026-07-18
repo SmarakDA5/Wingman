@@ -9,41 +9,33 @@ node_modules/
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
-# Editor/IDE
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-*.tmp
 
-# Logs
+# Logs and temp files
 *.log
+*.tmp
+*.swp
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-venv/
-.venv/
-env/
-ENV/
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
-# MyPy
-.mypy_cache/
-
-# Pytest
-.pytest_cache/
-
-# Compressed files
+# Compression
 *.zip
 *.gz
 *.tar
@@ -62,8 +54,13 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.mypy_cache/
+.pytest_cache/
 ```

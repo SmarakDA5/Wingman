@@ -1,7 +1,6 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, User, Heart, LogOut } from 'lucide-react';
-import { useAuthStore } from '../stores/authStore';
+import { Home, User, Heart } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab?: string;
@@ -21,75 +20,60 @@ const NavItem = ({ to, icon, label, isActive, onClick }: NavItemProps) => (
     to={to}
     onClick={onClick}
     className={({ isActive: linkIsActive }) =>
-      `relative flex flex-col items-center justify-center min-h-[44px] min-w-[60px] rounded-xl transition-all duration-300 ${
+      `relative flex items-center justify-center min-h-[44px] px-4 rounded-full transition-all duration-300 ${
         isActive !== undefined
           ? isActive
-            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg shadow-purple-500/30'
+            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
           : linkIsActive
-          ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+          ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg shadow-purple-500/30'
+          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
       }`
     }
   >
     {({ isActive: linkIsActive }) => (
       <motion.div
         initial={false}
-        animate={{ scale: (isActive !== undefined ? isActive : linkIsActive) ? 1.1 : 1 }}
-        className="flex flex-col items-center gap-1"
+        animate={{ scale: (isActive !== undefined ? isActive : linkIsActive) ? 1.05 : 1 }}
+        className="flex items-center gap-2"
       >
         {icon}
-        <span className="text-[10px] font-medium">{label}</span>
+        <span className="text-sm font-medium">{label}</span>
       </motion.div>
     )}
   </NavLink>
 );
 
 export const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps = {}) => {
-  const navigate = useNavigate();
-  const { logout } = useAuthStore();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
-
   return (
     <motion.nav
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 safe-area-pb"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed bottom-6 left-0 right-0 z-50 flex justify-center safe-area-pb"
     >
-      <div className="max-w-md mx-auto flex items-center justify-around px-4 py-2">
+      <div className="liquid-glass rounded-full shadow-2xl px-2 py-2 flex items-center gap-2">
         <NavItem 
           to="/app/feeds" 
-          icon={<Home size={20} />} 
+          icon={<Home size={18} />} 
           label="Feeds" 
           isActive={activeTab === 'feeds'}
           onClick={() => setActiveTab?.('feeds')}
         />
         <NavItem 
-          to="/app/info" 
-          icon={<User size={20} />} 
-          label="Profile" 
-          isActive={activeTab === 'profile'}
-          onClick={() => setActiveTab?.('profile')}
-        />
-        <NavItem 
           to="/app/likes" 
-          icon={<Heart size={20} />} 
+          icon={<Heart size={18} />} 
           label="Likes" 
           isActive={activeTab === 'likes'}
           onClick={() => setActiveTab?.('likes')}
         />
-        
-        <button
-          onClick={handleLogout}
-          className="flex flex-col items-center justify-center min-h-[44px] min-w-[60px] rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-        >
-          <LogOut size={20} />
-          <span className="text-[10px] font-medium">Logout</span>
-        </button>
+        <NavItem 
+          to="/app/info" 
+          icon={<User size={18} />} 
+          label="Profile" 
+          isActive={activeTab === 'profile'}
+          onClick={() => setActiveTab?.('profile')}
+        />
       </div>
     </motion.nav>
   );
