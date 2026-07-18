@@ -41,10 +41,6 @@ export const useAuthStore = create<AuthState>()(
             const token = `master_test_token_${masterUser.email}`;
             const user = { id: `master_${masterUser.email}`, email: masterUser.email };
             
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('master_user_email', masterUser.email);
-            localStorage.setItem('master_has_subscription', String(masterUser.hasSubscription));
-            
             set({ 
               user: { ...user, isAuthenticated: true }, 
               token, 
@@ -56,7 +52,6 @@ export const useAuthStore = create<AuthState>()(
 
           // WH2: Authenticate user (for non-master users)
           const { user, token } = await webhooks.authenticateUser(email, password);
-          localStorage.setItem('auth_token', token);
           set({ user: { ...user, isAuthenticated: true }, token, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -76,7 +71,6 @@ export const useAuthStore = create<AuthState>()(
           
           // WH1: Register user
           const { user, token } = await webhooks.registerUser(email, password);
-          localStorage.setItem('auth_token', token);
           set({ user: { ...user, isAuthenticated: true }, token, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -85,7 +79,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        localStorage.removeItem('auth_token');
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),
