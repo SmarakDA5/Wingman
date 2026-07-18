@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '../stores/authStore';
 
 // Vercel Patch: Use absolute Render URIs directly via environment variable
 // This bypasses Vercel's 10s Serverless Function timeout constraint
@@ -11,10 +12,13 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token from Zustand store
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
+    // Get token from Zustand store state (primary source)
+    const state = useAuthStore.getState();
+    const token = state.token;
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
