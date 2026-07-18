@@ -18,7 +18,7 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
         onClick={onDismiss}
       >
         <motion.div
-          className="liquid-glass rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+          className="liquid-glass-modal rounded-[32px] p-6 max-w-sm w-full shadow-2xl"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -45,7 +45,7 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
             </p>
             <button
               onClick={onDismiss}
-              className="w-full min-h-[44px] bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors touch-manipulation"
+              className="w-full min-h-[44px] bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all touch-manipulation shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
             >
               OK
             </button>
