@@ -22,7 +22,7 @@ export const SigninView = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/app/dashboard');
+      navigate('/app/feeds');
     } catch (err) {
       // Error handled by store
     }

@@ -25,7 +25,7 @@ export const SignupView = () => {
 
     try {
       await signup(formData.email, formData.password, formData.confirmPassword);
-      navigate('/app/dashboard');
+      navigate('/app/feeds');
     } catch (err) {
       // Error is handled by the store and displayed via the validation hook
     }
