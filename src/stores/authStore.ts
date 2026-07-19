@@ -3,16 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AuthState } from '../types';
 import webhooks from '../services/api';
 
-// Master control credentials for testing
-export const MASTER_CREDENTIALS = [
-  { email: 'master26@demo.com', password: 'G@M3r', hasSubscription: true },
-  { email: 'slave26@demo.com', password: 'G@M3r', hasSubscription: false },
-  { email: 'master26@gmail.com', password: 'G@M3r', hasSubscription: true },
-  { email: 'slave26@gmail.com', password: 'G@M3r', hasSubscription: false },
-  { email: 'master@wingman.test', password: 'Wingman2024!', hasSubscription: true },
-  { email: 'admin@wingman.test', password: 'Admin2024!', hasSubscription: true },
-];
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -25,15 +15,13 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         
         try {
-          // Check for master credentials first
-          const masterUser = MASTER_CREDENTIALS.find(
-            cred => cred.email === email && cred.password === password
-          );
-
-          if (masterUser) {
-            // Create mock user and token for master accounts - using email as primary identifier
-            const token = `master_test_token_${masterUser.email}`;
-            const user = { id: masterUser.email, email: masterUser.email };
+          // Always authenticate via backend - no master credentials bypass
+          const result = await webhooks.authenticateUser(email, password);
+          
+          // Backend returns [{ email }] on success, empty array on failure
+          if (Array.isArray(result) && result.length > 0 && result[0]?.email) {
+            const user = { id: result[0].email, email: result[0].email };
+            const token = `auth_token_${email}`;
             
             set({ 
               user: { ...user, isAuthenticated: true }, 
@@ -41,13 +29,10 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: true, 
               isLoading: false 
             });
-            return;
+          } else {
+            set({ isLoading: false });
+            throw new Error('Invalid credentials');
           }
-
-          // WH2: Authenticate user (for non-master users)
-          const { user, token } = await webhooks.authenticateUser(email, password);
-          // Backend returns user with email as primary identifier
-          set({ user: { ...user, isAuthenticated: true }, token, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
           throw error;

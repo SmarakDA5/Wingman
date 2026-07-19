@@ -12,6 +12,7 @@ import { SigninView } from './views/SigninView';
 import { FeedsView } from './views/FeedsView';
 import { LikesView } from './views/LikesView';
 import { InfoView } from './views/InfoView';
+import { LegalPage } from './views/LegalPage';
 import './App.css';
 
 // Cross-tab auth state synchronization listener
@@ -113,6 +114,11 @@ function App() {
         
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
+        
+        {/* Legal Pages (public) */}
+        <Route path="/privacy-policy" element={<LegalPage />} />
+        <Route path="/terms-of-service" element={<LegalPage />} />
+        <Route path="/contact" element={<LegalPage />} />
       </Routes>
     </BrowserRouter>
   );
