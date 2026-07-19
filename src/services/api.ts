@@ -43,6 +43,8 @@ const GATEWAYS = {
   AUTH: '/auth',
   FEEDS: '/feeds',
   USER: '/user',
+  PAYMENTS: '/payments',
+  LEGAL: '/legal',
 } as const;
 
 export const webhooks = {
@@ -67,6 +69,21 @@ export const webhooks = {
   // --- USER GET GATEWAY (GET /user/:resource) ---
   verifySubscription: async () => {
     const response = await apiClient.get(`${GATEWAYS.USER}/subscription-guard`);
+    return response.data;
+  },
+
+  createPaymentOrder: async (email: string, plan: string) => {
+    const response = await apiClient.post(`${GATEWAYS.PAYMENTS}/create-order`, { email, plan });
+    return response.data;
+  },
+
+  verifyPayment: async (p: { email: string; plan: string; razorpay_order_id: string; razorpay_payment_id: string }) => {
+    const response = await apiClient.post(`${GATEWAYS.PAYMENTS}/verify`, p);
+    return response.data;
+  },
+
+  fetchLegalPage: async (slug: string) => {
+    const response = await apiClient.get(`${GATEWAYS.LEGAL}/${slug}`);
     return response.data;
   },
 

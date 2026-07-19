@@ -182,9 +182,9 @@ export const LandingView = () => {
               Wingman
             </div>
             <div className="flex gap-6 text-gray-400 text-sm">
-              <a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors duration-200">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors duration-200">Contact</a>
+              <a href="/privacy-policy" className="hover:text-white transition-colors duration-200">Privacy Policy</a>
+              <a href="/terms-of-service" className="hover:text-white transition-colors duration-200">Terms of Service</a>
+              <a href="/contact" className="hover:text-white transition-colors duration-200">Contact</a>
             </div>
           </motion.div>
           <motion.div 
