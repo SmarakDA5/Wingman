@@ -1,158 +1,120 @@
 import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore'; // Adjust path if needed
+import type { FeedItem } from '../types'; // Adjust path if needed
 
-// Vercel Patch: Use absolute Render URIs directly via environment variable
-// This bypasses Vercel's 10s Serverless Function timeout constraint
 const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5678/webhook';
 
 export const apiClient = axios.create({
   baseURL: N8N_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 30000, // 30 seconds timeout to accommodate backend AI rate-limit waits
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30s timeout for AI rate-limit waits
 });
 
-// Request interceptor to add auth token from Zustand store
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Get token from Zustand store state (primary source)
     const state = useAuthStore.getState();
     const token = state.token;
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // CRITICAL: Auto-attach email to GET requests for the new Gateways
+    if (state.user?.email && config.method?.toLowerCase() === 'get') {
+      config.params = { ...config.params, email: state.user.email };
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth-storage');
       window.location.href = '/signin';
     }
     return Promise.reject(error);
   }
 );
 
-// Webhook identifiers as per specification
-export const WEBHOOKS = {
-  // WH0: Signup Submission - POST /verify_email_availability
-  // WH1: Post-WH0 Success - POST /register_user
-  // WH2: Signin Submission - POST /authenticate_user
-  // WH3: Shell Mount (Global) - GET /verify_subscription
-  // WH4: Main Feed - GET /feeds/discover
-  // WH5: AI Matched - GET /feeds/recommended
-  // WH6: High Applicants - GET /feeds/trending
-  // WH7: User's Liked Items - GET /user/likes
-  // WH8: Heart Icon Click - POST /sync_like_mutation
-  // WH9: Fetch Profile - GET /fetch_questionnaire
-  // WH10: Info Update Click - POST /update_user_info
-  // WH11: User's Bookmarks - GET /user/saved
-  WH0: { method: 'POST', endpoint: '/verify_email_availability' },
-  WH1: { method: 'POST', endpoint: '/register_user' },
-  WH2: { method: 'POST', endpoint: '/authenticate_user' },
-  WH3: { method: 'GET', endpoint: '/verify_subscription' },
-  WH4: { method: 'GET', endpoint: '/feeds/discover' },
-  WH5: { method: 'GET', endpoint: '/feeds/recommended' },
-  WH6: { method: 'GET', endpoint: '/feeds/trending' },
-  WH7: { method: 'GET', endpoint: '/user/likes' },
-  WH8: { method: 'POST', endpoint: '/sync_like_mutation' },
-  WH9: { method: 'GET', endpoint: '/fetch_questionnaire' },
-  WH10: { method: 'POST', endpoint: '/update_user_info' },
-  WH11: { method: 'GET', endpoint: '/user/saved' },
+// New Consolidated Gateway Paths
+const GATEWAYS = {
+  AUTH: '/auth',
+  FEEDS: '/feeds',
+  USER: '/user',
 } as const;
 
-import type { FeedItem } from '../types';
-
-interface FetchFeedResponse {
-  items: FeedItem[];
-}
-
-interface FetchLikedItemsResponse {
-  items: FeedItem[];
-}
-
-interface FetchSavedItemsResponse {
-  items: FeedItem[];
-}
-
-// Webhook execution functions
 export const webhooks = {
-  // WH0: Verify email availability
-  verifyEmailAvailability: async (email: string): Promise<{ available: boolean }> => {
-    const response = await apiClient.post(WEBHOOKS.WH0.endpoint, { email });
+  // --- AUTH GATEWAY (POST /auth/:action) ---
+  verifyEmailAvailability: async (email: string) => {
+    const response = await apiClient.post(`${GATEWAYS.AUTH}/verify-email`, { email });
     return response.data;
   },
 
-  // WH1: Register user
-  registerUser: async (email: string, password: string): Promise<{ user: { id: string; email: string }; token: string }> => {
-    const response = await apiClient.post(WEBHOOKS.WH1.endpoint, { email, password });
+  registerUser: async (email: string, password: string, fname?: string, lname?: string) => {
+    const response = await apiClient.post(`${GATEWAYS.AUTH}/register`, { 
+      email, password, fname: fname || 'User', lname: lname || 'Test' 
+    });
     return response.data;
   },
 
-  // WH2: Authenticate user
-  authenticateUser: async (email: string, password: string): Promise<{ user: { id: string; email: string }; token: string }> => {
-    const response = await apiClient.post(WEBHOOKS.WH2.endpoint, { email, password });
+  authenticateUser: async (email: string, password: string) => {
+    const response = await apiClient.post(`${GATEWAYS.AUTH}/login`, { email, password });
     return response.data;
   },
 
-  // WH3: Verify subscription
-  verifySubscription: async (): Promise<{ isActive: boolean }> => {
-    const response = await apiClient.get(WEBHOOKS.WH3.endpoint);
+  // --- USER GET GATEWAY (GET /user/:resource) ---
+  verifySubscription: async () => {
+    const response = await apiClient.get(`${GATEWAYS.USER}/subscription-guard`);
     return response.data;
   },
 
-  // WH4: Fetch main feed (discover)
-  fetchDiscoverFeed: async (): Promise<FetchFeedResponse> => {
-    const response = await apiClient.get(WEBHOOKS.WH4.endpoint);
-    return response.data;
+  fetchQuestionnaire: async () => {
+    const response = await apiClient.get(`${GATEWAYS.USER}/profile`);
+    // Adapter: Backend returns raw DB row. Map to { answers: {...} } for profileStore
+    const userData = Array.isArray(response.data) ? response.data[0] : response.data;
+    return { answers: userData || {} };
   },
 
-  // WH5: Fetch AI matched recommendations with scope_tier filter based on user's interest level
-  fetchRecommendedFeed: async (scopeTier?: number): Promise<FetchFeedResponse> => {
-    const params = scopeTier !== undefined ? { params: { scope_tier: scopeTier } } : {};
-    const response = await apiClient.get(WEBHOOKS.WH5.endpoint, params);
-    return response.data;
+  fetchLikedItems: async (): Promise<{ items: FeedItem[] }> => {
+    const response = await apiClient.get(`${GATEWAYS.USER}/likes`);
+    return { items: response.data || [] };
   },
 
-  // WH6: Fetch trending (high applicants)
-  fetchTrendingFeed: async (): Promise<FetchFeedResponse> => {
-    const response = await apiClient.get(WEBHOOKS.WH6.endpoint);
-    return response.data;
+  fetchSavedItems: async (): Promise<{ items: FeedItem[] }> => {
+    const response = await apiClient.get(`${GATEWAYS.USER}/saved`);
+    return { items: response.data || [] };
   },
 
-  // WH7: Fetch user's liked items
-  fetchLikedItems: async (): Promise<FetchLikedItemsResponse> => {
-    const response = await apiClient.get(WEBHOOKS.WH7.endpoint);
-    return response.data;
+  // --- FEEDS GATEWAY (GET /feeds/:type) ---
+  fetchDiscoverFeed: async (): Promise<{ items: FeedItem[] }> => {
+    const response = await apiClient.get(`${GATEWAYS.FEEDS}/discover`);
+    return { items: response.data || [] };
   },
 
-  // WH8: Sync like mutation - sends email, item_id, and item_type to backend
-  syncLikeMutation: async (email: string, itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course'): Promise<void> => {
-    await apiClient.post(WEBHOOKS.WH8.endpoint, { email, itemId, isLiked, itemType });
+  fetchRecommendedFeed: async (scopeTier?: number): Promise<{ items: FeedItem[] }> => {
+    const params = scopeTier !== undefined ? { scope_tier: scopeTier } : {};
+    const response = await apiClient.get(`${GATEWAYS.FEEDS}/recommended`, { params });
+    return { items: response.data || [] };
   },
 
-  // WH9: Fetch questionnaire (profile)
-  fetchQuestionnaire: async (): Promise<{ answers: Record<string, string> }> => {
-    const response = await apiClient.get(WEBHOOKS.WH9.endpoint);
-    return response.data;
+  fetchTrendingFeed: async (): Promise<{ items: FeedItem[] }> => {
+    const response = await apiClient.get(`${GATEWAYS.FEEDS}/trending`);
+    return { items: response.data || [] };
   },
 
-  // WH10: Update user info
-  updateUserInfo: async (answers: Record<string, string>): Promise<void> => {
-    await apiClient.post(WEBHOOKS.WH10.endpoint, { answers });
+  // --- USER POST GATEWAY (POST /user/:resource/:action) ---
+  syncLikeMutation: async (email: string, itemId: string, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => {
+    await apiClient.post(`${GATEWAYS.USER}/likes/toggle`, { 
+      email, item_id: itemId, action_like: isLiked, item_type: itemType 
+    });
   },
 
-  // WH11: Fetch user's saved/bookmarked items
-  fetchSavedItems: async (): Promise<FetchSavedItemsResponse> => {
-    const response = await apiClient.get(WEBHOOKS.WH11.endpoint);
-    return response.data;
+  updateUserInfo: async (answers: Record<string, any>) => {
+    const email = useAuthStore.getState().user?.email;
+    // Flattens the answers object to match backend SQL expectations
+    await apiClient.post(`${GATEWAYS.USER}/profile/update`, { email, ...answers });
   },
 };
 
