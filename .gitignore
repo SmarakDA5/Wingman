@@ -2,46 +2,9 @@
 # Dependencies
 node_modules/
 
-# Environment variables
-.env
-.env.local
-.env.*
-
-# Build outputs
+# Build artifacts
 dist/
-build/
-target/
-
-# Logs
-*.log
 
 # Temporary files
 *.tmp
-*.swp
-
-# IDE files
-.vscode/
-.idea/
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Package lock files (preserve existing)
-package-lock.json
-yarn.lock
-
-# TypeScript/JavaScript build artifacts
-*.js.map
-*.tsbuildinfo
-
-# Original rules preserved from existing .gitignore
-*.log
 ```
