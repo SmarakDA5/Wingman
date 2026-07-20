@@ -83,61 +83,66 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
       );
     }
 
-    // State 3: !hasAccess AND trial expired (or no trial) → email prompt, NO pay button
-    return (
-      <>
-        <svg className="w-16 h-16 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Your free trial has ended
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          To request a subscription extension, email us and we'll extend your access.
-        </p>
-        
-        {/* Email address shown as selectable/copyable text */}
-        <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Contact us at:</p>
-          <p className="text-lg font-mono text-purple-600 dark:text-purple-400 select-all cursor-text">
-            mrlearnersmarak666@gmail.com
+    // State 3: isTrialExpired → email prompt, NO pay button
+    if (isTrialExpired) {
+      return (
+        <>
+          <svg className="w-16 h-16 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Your free trial has ended
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            To request a subscription extension, email us and we'll extend your access.
           </p>
-        </div>
+          
+          {/* Email address shown as selectable/copyable text */}
+          <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Contact us at:</p>
+            <p className="text-lg font-mono text-purple-600 dark:text-purple-400 select-all cursor-text">
+              mrlearnersmarak666@gmail.com
+            </p>
+          </div>
 
-        <div className="space-y-3">
-          {/* Primary button: mailto link */}
-          <a
-            href={mailtoLink}
-            className="block w-full min-h-[44px] bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all touch-manipulation shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 text-center"
-          >
-            Email for Extension
-          </a>
-          
-          {/* Secondary link to /contact page */}
-          <a
-            href="/contact"
-            className="block w-full min-h-[44px] glass-card hover:bg-white/20 dark:hover:bg-white/10 text-gray-900 dark:text-white font-semibold py-3 px-6 rounded-2xl transition-all touch-manipulation text-center"
-          >
-            View Contact Page
-          </a>
-          
-          {/* Refresh status button */}
-          <button
-            onClick={handleRefreshStatus}
-            className="w-full min-h-[44px] text-gray-600 dark:text-gray-400 font-medium py-2 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
-          >
-            Refresh Status
-          </button>
-          
-          <button
-            onClick={onDismiss}
-            className="w-full min-h-[44px] text-gray-500 dark:text-gray-500 font-medium py-2 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
-          >
-            Close
-          </button>
-        </div>
-      </>
-    );
+          <div className="space-y-3">
+            {/* Primary button: mailto link */}
+            <a
+              href={mailtoLink}
+              className="block w-full min-h-[44px] bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all touch-manipulation shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 text-center"
+            >
+              Email for Extension
+            </a>
+            
+            {/* Secondary link to /contact page */}
+            <a
+              href="/contact"
+              className="block w-full min-h-[44px] glass-card hover:bg-white/20 dark:hover:bg-white/10 text-gray-900 dark:text-white font-semibold py-3 px-6 rounded-2xl transition-all touch-manipulation text-center"
+            >
+              View Contact Page
+            </a>
+            
+            {/* Refresh status button */}
+            <button
+              onClick={handleRefreshStatus}
+              className="w-full min-h-[44px] text-gray-600 dark:text-gray-400 font-medium py-2 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+            >
+              Refresh Status
+            </button>
+            
+            <button
+              onClick={onDismiss}
+              className="w-full min-h-[44px] text-gray-500 dark:text-gray-500 font-medium py-2 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    // Default fallback
+    return null;
   };
 
   return (
