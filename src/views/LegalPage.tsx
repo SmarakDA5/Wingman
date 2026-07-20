@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import webhooks from '../services/api';
 
 interface LegalPageData {
   slug: string;
@@ -9,6 +8,28 @@ interface LegalPageData {
   version: string;
 }
 
+// Hardcoded legal pages since /legal/:slug gateway is not in this n8n cluster
+const LEGAL_PAGES: Record<string, LegalPageData> = {
+  'privacy-policy': {
+    slug: 'privacy-policy',
+    title: 'Privacy Policy',
+    content: 'Your privacy policy content goes here.',
+    version: '1.0.0',
+  },
+  'terms-of-service': {
+    slug: 'terms-of-service',
+    title: 'Terms of Service',
+    content: 'Your terms of service content goes here.',
+    version: '1.0.0',
+  },
+  'contact': {
+    slug: 'contact',
+    title: 'Contact Us',
+    content: 'Contact us at mrlearnersmarak666@gmail.com',
+    version: '1.0.0',
+  },
+};
+
 export const LegalPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [pageData, setPageData] = useState<LegalPageData | null>(null);
@@ -16,34 +37,25 @@ export const LegalPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLegalPage = async () => {
-      if (!slug) {
-        setError('Invalid page');
-        setIsLoading(false);
-        return;
-      }
+    if (!slug) {
+      setError('Invalid page');
+      setIsLoading(false);
+      return;
+    }
 
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const result = await webhooks.fetchLegalPage(slug);
-        const data = Array.isArray(result) ? result[0] : result;
-        
-        if (data?.title && data?.content) {
-          setPageData(data);
-        } else {
-          setError('Page not found');
-        }
-      } catch (err) {
-        console.error('Failed to fetch legal page:', err);
-        setError('Failed to load page content');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchLegalPage();
+    // Use hardcoded legal pages since /legal/:slug gateway is not in this n8n cluster
+    const data = LEGAL_PAGES[slug];
+    
+    if (data?.title && data?.content) {
+      setPageData(data);
+    } else {
+      setError('Page not found');
+    }
+    
+    setIsLoading(false);
   }, [slug]);
 
   if (isLoading) {

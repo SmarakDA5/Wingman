@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import type { FeedItem } from '../types';
 import webhooks from '../services/api';
 import { useAuthStore } from './authStore';
-import { useProfileStore } from './profileStore';
 
 export type FeedTab = 'discover' | 'recommended' | 'trending' | 'likes' | 'saved';
 
@@ -66,7 +65,6 @@ export const useFeedsStore = create<FeedsState>((set) => ({
 
   refreshTab: async (tab: FeedTab) => {
     const user = useAuthStore.getState().user;
-    const interestLevel = useProfileStore.getState().interestLevel;
     
     if (!user?.email) return;
 
@@ -81,8 +79,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
           result = await webhooks.fetchDiscoverFeed();
           break;
         case 'recommended':
-          // WH5: Pass user's interest_level as scope_tier query parameter
-          result = await webhooks.fetchRecommendedFeed(interestLevel);
+          result = await webhooks.fetchRecommendedFeed();
           break;
         case 'trending':
           result = await webhooks.fetchTrendingFeed();
@@ -129,7 +126,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
 
     try {
       // WH8: Send email, item_id, and item_type to backend
-      await webhooks.syncLikeMutation(user.email, String(id), !isLiked, itemType);
+      await webhooks.syncLikeMutation(user.email, id, !isLiked, itemType);
     } catch (error) {
       // Revert on error
       set((state) => ({
