@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { useAuthStore } from './authStore';
 import webhooks from '../services/api';
 
 interface SubscriptionState {
@@ -23,10 +22,10 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   verifySubscription: async () => {
     set({ isLoading: true });
     try {
-      // Get email from auth store
-      const { user } = useAuthStore.getState();
+      // Call backend subscription-guard endpoint
+      const response = await webhooks.verifySubscription();
       
-      if (!user?.email) {
+      if (!response) {
         set({ 
           isActive: false, 
           hasAccess: false, 
@@ -37,15 +36,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
         });
         return;
       }
-
-      // Call backend subscription-guard endpoint
-      const response = await webhooks.verifySubscription();
-      const row = Array.isArray(response) ? response[0] : response;
       
-      const hasAccess = !!row?.has_access;
-      const subscriptionStatus = row?.subscription_status || null;
-      const trialEndsAt = row?.trial_ends_at || null;
-      const subscriptionEndsAt = row?.subscription_ends_at || null;
+      const hasAccess = !!response.has_access;
+      const subscriptionStatus = response.subscription_status || null;
+      const trialEndsAt = response.trial_ends_at || null;
+      const subscriptionEndsAt = response.subscription_ends_at || null;
       
       set({ 
         isActive: hasAccess,
