@@ -4,28 +4,13 @@ node_modules/
 
 # Build artifacts
 dist/
-build/
-target/
 
 # Temporary files
-*.tmp
-*.log
+node_modules/.tmp/
 
-# Environment
-.env
-.env.local
-*.env.*
+# Package lock files
+package-lock.json
 
-# Cache directories
-.cache/
-.node_modules.bak/
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Package lock files (already tracked by package-lock.json)
+# IDE specific files
 node_modules/.package-lock.json
 ```
