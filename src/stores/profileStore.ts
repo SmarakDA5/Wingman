@@ -55,6 +55,7 @@ export const validateProfileAnswers = (answers: ProfileAnswers): boolean => {
   return true;
 };
 
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
 export const useProfileStore = create<ProfileStore>()(
   persist(
     (set, get) => ({
@@ -86,17 +87,16 @@ export const useProfileStore = create<ProfileStore>()(
         }
       },
 
-      setInterestLevel: (level: number) => {
-        const currentAnswers = get().answers;
-        const updatedAnswers = { ...currentAnswers, interest_level: level };
-        set({ answers: updatedAnswers });
-        
-        // Debounced persist to backend via WH10 - send full profile
-        clearTimeout(_t);
-        _t = setTimeout(() => {
-          webhooks.updateUserInfo(updatedAnswers);
-        }, 500);
-      },
+    setInterestLevel: async (level: number) => {
+      const updatedAnswers = { ...get().answers, interest_level: level };
+      set({ answers: updatedAnswers }); // UI updates instantly
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        webhooks.updateUserInfo({ interest_level: String(level) }).catch((error) => {
+          console.error('Failed to save interest level:', error);
+        });
+      }, 500); // network debounced
+    },
     }),
     {
       name: 'profile-storage',
