@@ -72,22 +72,22 @@ const ThemeSwitcherWrapper = () => {
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace />;
   }
-  
+
   return <AuthenticatedShell>{children}</AuthenticatedShell>;
 };
 
 // Public Route Component (redirect if already authenticated)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
-  
+
   if (isAuthenticated) {
     return <Navigate to="/app/feeds" replace />;
   }
-  
+
   return children;
 };
 
@@ -100,7 +100,12 @@ function App() {
         <Route path="/" element={<PublicRoute><LandingView /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><SignupView /></PublicRoute>} />
         <Route path="/signin" element={<PublicRoute><SigninView /></PublicRoute>} />
-        
+
+        {/* Legal Pages (public) */}
+        <Route path="/privacy-policy" element={<LegalPage slug="privacy-policy" />} />
+        <Route path="/terms-of-service" element={<LegalPage slug="terms-of-service" />} />
+        <Route path="/contact" element={<LegalPage slug="contact" />} />
+
         {/* Protected Routes */}
         <Route path="/app" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
           <Route index element={<Navigate to="/app/feeds" replace />} />
@@ -108,14 +113,9 @@ function App() {
           <Route path="likes" element={<LikesView />} />
           <Route path="info" element={<InfoView />} />
         </Route>
-        
+
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
-        
-        {/* Legal Pages (public) */}
-        <Route path="/privacy-policy" element={<LegalPage />} />
-        <Route path="/terms-of-service" element={<LegalPage />} />
-        <Route path="/contact" element={<LegalPage />} />
       </Routes>
     </BrowserRouter>
   );
