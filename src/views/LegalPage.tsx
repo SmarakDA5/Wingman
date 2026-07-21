@@ -123,33 +123,33 @@ We appreciate your patience and look forward to assisting you!`,
 };
 
 export const LegalPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug } = useParams<{ slug?: string }>();
+  const { pathname } = useLocation();
   const [pageData, setPageData] = useState<LegalPageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slug) {
-      setError('Invalid page');
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    // Use hardcoded legal pages since /legal/:slug gateway is not in this n8n cluster
-    const data = LEGAL_PAGES[slug];
-    
+    const raw = (slug ?? pathname.split('/').filter(Boolean).pop() ?? '').toLowerCase();
+    const ALIAS: Record<string, string> = {
+      privacy: 'privacy-policy',
+      'privacy-policy': 'privacy-policy',
+      terms: 'terms-of-service',
+      'terms-of-service': 'terms-of-service',
+      tos: 'terms-of-service',
+      contact: 'contact',
+    };
+    const key = ALIAS[raw] ?? 'privacy-policy';
+    const data = LEGAL_PAGES[key];
     if (data?.title && data?.content) {
       setPageData(data);
+      setError(null);
     } else {
       setError('Page not found');
     }
-    
     setIsLoading(false);
-  }, [slug]);
-
+  }, [slug, pathname]);
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] dark:bg-black flex items-center justify-center">
