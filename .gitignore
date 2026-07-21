@@ -1,12 +1,59 @@
 ```
 # Dependencies
 node_modules/
+
 # Build artifacts
 dist/
+build/
+target/
+
+# Logs and temp files
+*.log
+*.tmp
+
 # Environment
 .env
-.env.
-*.env.*
-# Cache
-.npm/
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+.env.local
+
+# TypeScript/JavaScript
+*.tsbuildinfo
+.npm
+.yarn
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Gradle
+.gradle/
+build/
+
+# MyPy
+.mypy_cache/
+
+# PyTest
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*~
+.DS_Store
+Thumbs.db
 ```

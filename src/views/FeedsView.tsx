@@ -167,7 +167,7 @@ export const FeedsView = () => {
                     >
                       <EventCard
                         item={item}
-                        onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, activeTab, isLiked, 'internship')}
+                        onLikeToggle={(id: number, isLiked: boolean) => toggleLike(id, activeTab, isLiked, item.category || item.entity_type || 'job')}
                       />
                     </motion.div>
                   ))}

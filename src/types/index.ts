@@ -13,6 +13,8 @@ export interface FeedItem {
   scope_tier: number; // 0, 1, 2, 3
   apply_by: string;
   isLiked?: boolean;
+  category?: string;
+  entity_type?: string;
 }
 
 export type ScopeLevel = 0 | 1 | 2 | 3;

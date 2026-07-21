@@ -56,7 +56,7 @@ export const webhooks = {
   fetchTrendingFeed:    async () => ({ items: (await apiClient.get(`${G.FEEDS}/trending`)).data ?? [] }),
 
   // USER (POST)
-  syncLikeMutation: async (email: string, itemId: number, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => {
+  syncLikeMutation: async (email: string, itemId: string | number, isLiked: boolean, itemType: string) => {
     await apiClient.post(`${G.USER_POST}/likes/toggle`, { email, item_id: itemId, item_type: itemType, action_like: isLiked });
   },
   updateUserInfo: async (answers: Record<string, any>) => {

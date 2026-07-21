@@ -14,7 +14,7 @@ export interface FeedsState {
   setActiveTab: (tab: FeedTab) => void;
   initializeFeeds: () => Promise<void>;
   refreshTab: (tab: FeedTab) => Promise<void>;
-  toggleLike: (id: number, tab: FeedTab, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => Promise<void>;
+  toggleLike: (id: number, tab: FeedTab, isLiked: boolean, itemType: string) => Promise<void>;
 }
 
 export const useFeedsStore = create<FeedsState>((set) => ({
@@ -106,7 +106,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
     }
   },
 
-  toggleLike: async (id: number, tab: FeedTab, isLiked: boolean, itemType: 'internship' | 'scheme' | 'job' | 'course') => {
+  toggleLike: async (id: number, tab: FeedTab, isLiked: boolean, itemType: string) => {
     const user = useAuthStore.getState().user;
     
     if (!user?.email) {
@@ -126,7 +126,7 @@ export const useFeedsStore = create<FeedsState>((set) => ({
 
     try {
       // WH8: Send email, item_id, and item_type to backend
-      await webhooks.syncLikeMutation(user.email, id, !isLiked, itemType);
+      await webhooks.syncLikeMutation(user.email, String(id), !isLiked, itemType);
     } catch (error) {
       // Revert on error
       set((state) => ({

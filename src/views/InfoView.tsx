@@ -50,9 +50,9 @@ export const InfoView = () => {
   const loadProfileData = async () => {
     try {
       await fetchProfile();
-      setIsInitialized(true);
     } catch (error) {
       console.error('Failed to load profile:', error);
+    } finally {
       setIsInitialized(true);
     }
   };
@@ -95,8 +95,8 @@ export const InfoView = () => {
     }
   };
 
-  const handleInterestLevelChange = async (level: number) => {
-    await setInterestLevel(level);
+  const handleInterestLevelChange = (level: number) => {
+    setInterestLevel(level);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,11 +110,11 @@ export const InfoView = () => {
     setSubmitSuccess(false);
 
     try {
-      // Build flat payload matching backend schema exactly
+      // Build flat payload matching backend schema exactly - gpa kept as string
       const payload = {
         edu: formData.edu.trim(),
         field: formData.field.trim(),
-        gpa: formData.gpa ? parseFloat(formData.gpa) : 0,
+        gpa: formData.gpa,
         skill: formData.skill.trim(),
         goal: formData.goal.trim(),
         interest_level: profileAnswers.interest_level ?? 0,

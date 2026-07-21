@@ -12,6 +12,7 @@ export interface ProfileAnswers {
   field?: string;
   skill?: string;
   goal?: string;
+  gpa?: string | number;
   interest_level?: number; // Maps to backend scope_tier (0-3)
   [key: string]: string | number | undefined;
 }
@@ -21,13 +22,15 @@ export interface ProfileState {
   isLoading: boolean;
   isInitialized: boolean;
   fetchProfile: () => Promise<void>;
-  setInterestLevel: (level: number) => Promise<void>;
+  setInterestLevel: (level: number) => void;
 }
 
 export interface ProfileStore extends ProfileState {
   isProfileValid: boolean;
   interestLevel: number;
 }
+
+let _t: ReturnType<typeof setTimeout> | undefined;
 
 /**
  * Validates if the profile answers object is valid:
@@ -83,17 +86,16 @@ export const useProfileStore = create<ProfileStore>()(
         }
       },
 
-      setInterestLevel: async (level: number) => {
+      setInterestLevel: (level: number) => {
         const currentAnswers = get().answers;
         const updatedAnswers = { ...currentAnswers, interest_level: level };
         set({ answers: updatedAnswers });
         
-        // Persist to backend via WH10
-        try {
-          await webhooks.updateUserInfo({ interest_level: String(level) });
-        } catch (error) {
-          console.error('Failed to save interest level:', error);
-        }
+        // Debounced persist to backend via WH10 - send full profile
+        clearTimeout(_t);
+        _t = setTimeout(() => {
+          webhooks.updateUserInfo(updatedAnswers);
+        }, 500);
       },
     }),
     {
