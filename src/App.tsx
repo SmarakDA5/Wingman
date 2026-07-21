@@ -37,7 +37,7 @@ function AuthSyncListener() {
 // Authenticated Shell Component
 const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const { verifySubscription, isActive: isSubscriptionActive, isLoading: isCheckingSubscription } = useSubscriptionStore();
+  const { verifySubscription, has_access, loaded, error } = useSubscriptionStore();
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   useEffect(() => {
@@ -45,13 +45,10 @@ const AuthenticatedShell = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Only show modal after loading is complete AND subscription is not active
-    if (!isCheckingSubscription && !isSubscriptionActive) {
-      setShowSubscriptionModal(true);
-    } else {
-      setShowSubscriptionModal(false);
-    }
-  }, [isSubscriptionActive, isCheckingSubscription]);
+    // Only show modal after loading is complete AND subscription is not active (confirmed no-access only)
+    const block = loaded && !has_access && !error;
+    setShowSubscriptionModal(block);
+  }, [has_access, loaded, error]);
 
   // Hide nav on landing/auth pages
   const hideNav = location.pathname === '/' || location.pathname === '/signup' || location.pathname === '/signin';

@@ -8,13 +8,14 @@ interface SubscriptionModalProps {
 }
 
 export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps) => {
-  const { hasAccess, trialEndsAt, subscriptionStatus, verifySubscription } = useSubscriptionStore();
+  const { has_access, subscriptionStatus, verifySubscription } = useSubscriptionStore();
   const { user } = useAuthStore();
 
   if (!isOpen) return null;
 
   // Calculate trial days remaining
   const getTrialDaysRemaining = () => {
+    const { trialEndsAt } = useSubscriptionStore.getState();
     if (!trialEndsAt) return null;
     const trialEnd = new Date(trialEndsAt);
     const now = new Date();
@@ -25,7 +26,7 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
 
   const trialDaysRemaining = getTrialDaysRemaining();
   const isTrialActive = trialDaysRemaining !== null && trialDaysRemaining > 0;
-  const isTrialExpired = trialEndsAt !== null && !isTrialActive && !hasAccess;
+  const isTrialExpired = !has_access && !isTrialActive;
 
   const handleRefreshStatus = async () => {
     await verifySubscription();
@@ -36,8 +37,8 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
     : `mailto:mrlearnersmarak666@gmail.com?subject=Wingman%20subscription%20extension`;
 
   const renderContent = () => {
-    // State 1: hasAccess === true → show nothing or small "Active" chip
-    if (hasAccess) {
+    // State 1: has_access === true → show nothing or small "Active" chip
+    if (has_access) {
       return (
         <>
           <svg className="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +60,7 @@ export const SubscriptionModal = ({ isOpen, onDismiss }: SubscriptionModalProps)
       );
     }
 
-    // State 2: !hasAccess AND trialEndsAt is in the future → countdown message
+    // State 2: !has_access AND trialEndsAt is in the future → countdown message
     if (isTrialActive) {
       return (
         <>
