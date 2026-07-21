@@ -17,7 +17,7 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Retry a GET once on timeout/5xx (lets a cold DB finish waking). Never retry writes.
+// Retry GET requests once on timeout/5xx (handles cold DB starts)
 const retried = new WeakSet<object>();
 apiClient.interceptors.response.use(undefined, async (err) => {
   const cfg = err?.config;
@@ -33,7 +33,7 @@ apiClient.interceptors.response.use(undefined, async (err) => {
   return Promise.reject(err);
 });
 
-// n8n production webhooks are namespaced by each node's webhookId: /webhook/{webhookId}/{path}
+// n8n production webhooks require webhookId in path: /webhook/{webhookId}/{path}
 const G = {
   AUTH:      '/6e16a3b9-7652-41b5-b49e-c7a817e8b272/auth',
   FEEDS:     '/075954ad-35a6-4efc-8f43-bfd806d1116b/feeds',
