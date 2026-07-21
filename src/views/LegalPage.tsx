@@ -122,23 +122,25 @@ We appreciate your patience and look forward to assisting you!`,
   },
 };
 
-export const LegalPage = () => {
-  const { slug } = useParams<{ slug?: string }>();
+const ALIAS: Record<string, string> = {
+  privacy: 'privacy-policy',
+  'privacy-policy': 'privacy-policy',
+  terms: 'terms-of-service',
+  'terms-of-service': 'terms-of-service',
+  tos: 'terms-of-service',
+  contact: 'contact',
+};
+
+export const LegalPage = ({ slug: slugProp }: { slug?: string }) => {
+  const { slug: slugParam } = useParams<{ slug?: string }>();
   const { pathname } = useLocation();
   const [pageData, setPageData] = useState<LegalPageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = (slug ?? pathname.split('/').filter(Boolean).pop() ?? '').toLowerCase();
-    const ALIAS: Record<string, string> = {
-      privacy: 'privacy-policy',
-      'privacy-policy': 'privacy-policy',
-      terms: 'terms-of-service',
-      'terms-of-service': 'terms-of-service',
-      tos: 'terms-of-service',
-      contact: 'contact',
-    };
+    // Resolution order: prop -> route param -> last path segment -> alias map
+    const raw = (slugProp ?? slugParam ?? pathname.split('/').filter(Boolean).pop() ?? '').toLowerCase();
     const key = ALIAS[raw] ?? 'privacy-policy';
     const data = LEGAL_PAGES[key];
     if (data?.title && data?.content) {
@@ -148,8 +150,8 @@ export const LegalPage = () => {
       setError('Page not found');
     }
     setIsLoading(false);
-  }, [slug, pathname]);
-  
+  }, [slugProp, slugParam, pathname]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] dark:bg-black flex items-center justify-center">
@@ -199,7 +201,7 @@ export const LegalPage = () => {
 
         {/* Content */}
         <div className="glass-card rounded-3xl p-6 sm:p-8 shadow-lg">
-          <div 
+          <div
             className="prose prose-gray dark:prose-invert max-w-none"
             style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8' }}
           >
@@ -225,3 +227,5 @@ export const LegalPage = () => {
     </div>
   );
 };
+
+export default LegalPage;
