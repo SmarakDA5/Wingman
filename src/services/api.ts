@@ -17,20 +17,33 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// n8n production webhooks are namespaced by each node's webhookId: /webhook/{webhookId}/{path}.
-// These IDs are stable unless the workflow is re-imported or the webhook nodes are recreated.
+// Retry a GET once on timeout/5xx (lets a cold DB finish waking). Never retry writes.
+const retried = new WeakSet<object>();
+apiClient.interceptors.response.use(undefined, async (err) => {
+  const cfg = err?.config;
+  if (!cfg || retried.has(cfg)) return Promise.reject(err);
+  const isGet = (cfg.method || '').toLowerCase() === 'get';
+  const isTimeout = err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message || '');
+  const is5xx = !err?.response || err?.response?.status >= 500;
+  if (isGet && (isTimeout || is5xx)) {
+    retried.add(cfg);
+    await new Promise((r) => setTimeout(r, 1200));
+    return apiClient(cfg);
+  }
+  return Promise.reject(err);
+});
+
+// n8n production webhooks are namespaced by each node's webhookId: /webhook/{webhookId}/{path}
 const G = {
   AUTH:      '/6e16a3b9-7652-41b5-b49e-c7a817e8b272/auth',
   FEEDS:     '/075954ad-35a6-4efc-8f43-bfd806d1116b/feeds',
   USER_GET:  '/f8fcec04-cf28-43c7-bc6b-ba69bab7f331/user',
   USER_POST: '/3bc1355c-c506-458e-b93c-6ff2d93ab94b/user',
-  LEGAL:     '/1f4c9b1b-49c7-4129-bc89-c8bfbc9dc9a5/legal',
 } as const;
 
 const first = (d: any) => (Array.isArray(d) ? d[0] : d);
 
 export const webhooks = {
-  // AUTH (POST)
   verifyEmailAvailability: async (email: string) => {
     const { data } = await apiClient.post(`${G.AUTH}/verify-email`, { email });
     return { exists: Number(first(data)?.exists ?? 0) > 0 };
@@ -43,19 +56,13 @@ export const webhooks = {
     const { data } = await apiClient.post(`${G.AUTH}/login`, { email, password });
     return Array.isArray(data) && data.length > 0 ? data[0] : null;
   },
-
-  // USER (GET) — email is auto-attached by the interceptor above
   verifySubscription: async () => first((await apiClient.get(`${G.USER_GET}/subscription-guard`)).data),
   fetchQuestionnaire: async () => ({ answers: first((await apiClient.get(`${G.USER_GET}/profile`)).data) ?? {} }),
-  fetchLikedItems:    async () => ({ items: (await apiClient.get(`${G.USER_GET}/likes`)).data ?? [] }),
-  fetchSavedItems:    async () => ({ items: (await apiClient.get(`${G.USER_GET}/saved`)).data ?? [] }),
-
-  // FEEDS (GET)
-  fetchDiscoverFeed:    async () => ({ items: (await apiClient.get(`${G.FEEDS}/discover`)).data ?? [] }),
+  fetchLikedItems: async () => ({ items: (await apiClient.get(`${G.USER_GET}/likes`)).data ?? [] }),
+  fetchSavedItems: async () => ({ items: (await apiClient.get(`${G.USER_GET}/saved`)).data ?? [] }),
+  fetchDiscoverFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/discover`)).data ?? [] }),
   fetchRecommendedFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/recommended`)).data ?? [] }),
-  fetchTrendingFeed:    async () => ({ items: (await apiClient.get(`${G.FEEDS}/trending`)).data ?? [] }),
-
-  // USER (POST)
+  fetchTrendingFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/trending`)).data ?? [] }),
   syncLikeMutation: async (email: string, itemId: string | number, isLiked: boolean, itemType: string) => {
     await apiClient.post(`${G.USER_POST}/likes/toggle`, { email, item_id: itemId, item_type: itemType, action_like: isLiked });
   },
@@ -63,9 +70,6 @@ export const webhooks = {
     const email = useAuthStore.getState().user?.email;
     await apiClient.post(`${G.USER_POST}/profile/update`, { email, ...answers });
   },
-
-  // LEGAL (GET)
-  fetchLegalPage: async (slug: string) => first((await apiClient.get(`${G.LEGAL}/${slug}`)).data),
 };
 
 export default webhooks;
