@@ -17,15 +17,16 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Retry GET requests once on timeout/5xx (handles cold DB starts)
+// Retry GET requests once on TIMEOUT only (cold DB wake).
+// Never retry on 5xx — retrying a down/cold backend amplifies the request
+// burst and OOM-kills the free Render instance.
 const retried = new WeakSet<object>();
 apiClient.interceptors.response.use(undefined, async (err) => {
   const cfg = err?.config;
   if (!cfg || retried.has(cfg)) return Promise.reject(err);
   const isGet = (cfg.method || '').toLowerCase() === 'get';
   const isTimeout = err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message || '');
-  const is5xx = !err?.response || err?.response?.status >= 500;
-  if (isGet && (isTimeout || is5xx)) {
+  if (isGet && isTimeout) {
     retried.add(cfg);
     await new Promise((r) => setTimeout(r, 1200));
     return apiClient(cfg);
