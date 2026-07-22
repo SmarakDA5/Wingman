@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5678/webhook';
+const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL || '/webhook';
 
 export const apiClient = axios.create({
   baseURL: N8N_BASE_URL,
