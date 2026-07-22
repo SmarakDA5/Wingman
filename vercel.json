@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    {
+    { 
       "source": "/webhook/:path*",
-      "destination": "https://n8n-latest-a8tc.onrender.com/webhook/:path*"
-    }
+      "destination": "https://n8n-latest-a8tc.onrender.com/webhook/:path*" }
   ]
 }
