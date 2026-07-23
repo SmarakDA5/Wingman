@@ -103,8 +103,11 @@ function App() {
 
         {/* Legal Pages (public) */}
         <Route path="/privacy-policy" element={<LegalPage slug="privacy-policy" />} />
+        <Route path="/privacy" element={<LegalPage slug="privacy-policy" />} />
         <Route path="/terms-of-service" element={<LegalPage slug="terms-of-service" />} />
+        <Route path="/terms" element={<LegalPage slug="terms-of-service" />} />
         <Route path="/contact" element={<LegalPage slug="contact" />} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
 
         {/* Protected Routes */}
         <Route path="/app" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
