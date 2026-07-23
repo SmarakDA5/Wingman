@@ -42,7 +42,7 @@ export const FeedsView = () => {
   const { isProfileValid, fetchProfile, isInitialized: isProfileInitialized } = useProfileStore();
 
   useEffect(() => {
-    // Initialize feeds once on mount
+    // Initialize feeds once on mount (renders from cache instantly; silent background revalidate)
     if (!isInitialized) {
       initializeFeeds();
     }
@@ -56,11 +56,14 @@ export const FeedsView = () => {
   }, [isProfileInitialized, fetchProfile]);
 
   useEffect(() => {
-    // Refresh tab content when tab changes and profile is valid
-    if (isProfileValid && activeTab) {
+    // Only (re)fetch a tab if it's empty (e.g. a failed load). Normal tab switches
+    // read from the cached feeds populated by initializeFeeds — no redundant refetch.
+    if (!isProfileValid || !activeTab || !isInitialized) return;
+    const { feeds, loadingTabs } = useFeedsStore.getState();
+    if ((feeds[activeTab]?.length ?? 0) === 0 && !loadingTabs[activeTab]) {
       refreshTab(activeTab);
     }
-  }, [activeTab, isProfileValid]);
+  }, [activeTab, isProfileValid, isInitialized, refreshTab]);
 
   const currentFeeds: FeedItem[] = feeds[activeTab] || [];
   const isLoadingTab = loadingTabs[activeTab] || false;
@@ -136,7 +139,7 @@ export const FeedsView = () => {
             >
               {TABS.find((t) => t.id === activeTab)?.label}
             </motion.h2>
-            
+
             <AnimatePresence mode="wait">
               {isLoadingTab ? (
                 <motion.div
