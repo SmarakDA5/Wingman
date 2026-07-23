@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useProfileStore } from '../stores/profileStore';
 import { ScopeSlider } from '../components/ScopeSlider';
+import { createWriteGate } from '../utils/profileWriteGate';
 import webhooks from '../services/api';
 
 interface FormData {
@@ -25,8 +26,24 @@ interface FormErrors {
 export const InfoView = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { fetchProfile, answers: profileAnswers, setInterestLevel } = useProfileStore();
-  
+  const { fetchProfile, answers: profileAnswers, setInterestLevel, setAnswers, interestLevel } = useProfileStore();
+
+  // Coalesced + serialized write gate: slider writes are debounced (1.5s),
+  // collapsed to the latest value, and never overlap (one in flight at a time).
+  const gate = useMemo(
+    () =>
+      createWriteGate<Record<string, unknown>>({
+        debounceMs: 1500,
+        buildPayload: (lvl) => ({ ...useProfileStore.getState().answers, interest_level: lvl }),
+        send: (p) => webhooks.updateUserInfo(p as Record<string, string>),
+        onError: (e) => console.error('Failed to save interest level:', e),
+      }),
+    []
+  );
+
+  // On unmount, flush any pending slider value so the last choice is persisted.
+  useEffect(() => () => { void gate.flush(); }, [gate]);
+
   const [formData, setFormData] = useState<FormData>({
     edu: '',
     field: '',
@@ -34,7 +51,7 @@ export const InfoView = () => {
     skill: '',
     goal: '',
   });
-  
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -72,7 +89,7 @@ export const InfoView = () => {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     requiredFields.forEach((field) => {
       if (!formData[field] || formData[field].trim() === '') {
         newErrors[field] = 'This field is required';
@@ -96,12 +113,13 @@ export const InfoView = () => {
   };
 
   const handleInterestLevelChange = (level: number) => {
-    setInterestLevel(level);
+    setInterestLevel(level); // instant local store update (reactive + persisted)
+    gate.setLevel(level);    // debounced, coalesced, serialized network write
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -117,12 +135,14 @@ export const InfoView = () => {
         gpa: formData.gpa,
         skill: formData.skill.trim(),
         goal: formData.goal.trim(),
-        interest_level: profileAnswers.interest_level ?? 0,
-      } as unknown as Record<string, string>;
+        interest_level: interestLevel,
+      };
 
-      // WH10: Update user info - API interceptor attaches email automatically
-      await webhooks.updateUserInfo(payload);
-      
+      // Save through the gate (serializes behind any in-flight slider write)…
+      await gate.save(payload);
+      // …then sync the store so isProfileValid flips true immediately (no refetch).
+      setAnswers(payload);
+
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (error) {
@@ -280,7 +300,7 @@ export const InfoView = () => {
                 Interest Level (Scope Tier)
               </label>
               <div className="liquid-glass rounded-xl p-4">
-                <ScopeSlider value={profileAnswers.interest_level ?? 0} onChange={handleInterestLevelChange} />
+                <ScopeSlider value={interestLevel} onChange={handleInterestLevelChange} />
                 <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
                   <span>Local / Casual</span>
                   <span>Global / Prestigious</span>
