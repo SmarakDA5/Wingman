@@ -62,7 +62,27 @@ export const webhooks = {
   fetchLikedItems: async () => ({ items: (await apiClient.get(`${G.USER_GET}/likes`)).data ?? [] }),
   fetchSavedItems: async () => ({ items: (await apiClient.get(`${G.USER_GET}/saved`)).data ?? [] }),
   fetchDiscoverFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/discover`)).data ?? [] }),
-  fetchRecommendedFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/recommended`)).data ?? [] }),
+  // Recommended now reads the personalized RECOMMENDATIONS endpoint (all 4 types),
+  // mapped to the same card shape the generic feeds use. The request interceptor
+  // auto-appends ?email= to this GET.
+  fetchRecommendedFeed: async () => {
+    const { data } = await apiClient.get(`${G.USER_GET}/recommendations`);
+    const rows = Array.isArray(data) ? data : [];
+    return {
+      items: rows.map((r: any) => ({
+        id: r.rec_key ?? r.entity_id,
+        title: r.title,
+        company: r.organization,
+        url: r.url,
+        description_summary: r.summary,
+        category: r.type,
+        entity_type: r.type,
+        scope_tier: r.scope_phase,
+        scope_phase: r.scope_phase,
+        isLiked: false,
+      })),
+    };
+  },
   fetchTrendingFeed: async () => ({ items: (await apiClient.get(`${G.FEEDS}/trending`)).data ?? [] }),
   syncLikeMutation: async (email: string, itemId: string | number, isLiked: boolean, itemType: string) => {
     await apiClient.post(`${G.USER_POST}/likes/toggle`, { email, item_id: itemId, item_type: itemType, action_like: isLiked });
