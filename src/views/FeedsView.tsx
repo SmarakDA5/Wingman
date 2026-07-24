@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFeedsStore, type FeedTab } from '../stores/dashboardStore';
 import { useProfileStore } from '../stores/profileStore';
 import { EventCard } from '../components/EventCard';
+import { ScopeSlider } from '../components/ScopeSlider';
 import type { FeedItem } from '../types';
 
 const TABS: { id: FeedTab; label: string }[] = [
@@ -39,7 +40,7 @@ const FeedSkeleton = () => (
 export const FeedsView = () => {
   const navigate = useNavigate();
   const { activeTab, setActiveTab, initializeFeeds, isInitialized, feeds, toggleLike, loadingTabs, refreshTab } = useFeedsStore();
-  const { isProfileValid, fetchProfile, isInitialized: isProfileInitialized } = useProfileStore();
+  const { isProfileValid, fetchProfile, isInitialized: isProfileInitialized, interestLevel, setInterestLevel } = useProfileStore();
 
   useEffect(() => {
     // Initialize feeds once on mount (renders from cache instantly; silent background revalidate)
@@ -65,8 +66,19 @@ export const FeedsView = () => {
     }
   }, [activeTab, isProfileValid, isInitialized, refreshTab]);
 
-  const currentFeeds: FeedItem[] = feeds[activeTab] || [];
   const isLoadingTab = loadingTabs[activeTab] || false;
+
+  // Recommended = personalized recs filtered by the breadth slider (scope_phase <= interestLevel),
+  // topped up from Discover so every slider position shows at least 10 cards.
+  let currentFeeds: FeedItem[] = feeds[activeTab] || [];
+  if (activeTab === 'recommended') {
+    currentFeeds = currentFeeds.filter((it: any) => (it.scope_phase ?? 0) <= interestLevel);
+    if (currentFeeds.length < 10) {
+      const haveUrls = new Set(currentFeeds.map((it: any) => it.url));
+      const pool = (feeds.discover || []).filter((it: any) => !haveUrls.has(it.url));
+      currentFeeds = [...currentFeeds, ...pool.slice(0, 10 - currentFeeds.length)];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pb-24 transition-colors duration-500">
@@ -139,6 +151,21 @@ export const FeedsView = () => {
             >
               {TABS.find((t) => t.id === activeTab)?.label}
             </motion.h2>
+
+            {/* Breadth slider — Recommended tab only; filters recs by scope_phase */}
+            {activeTab === 'recommended' && (
+              <div className="liquid-glass rounded-xl p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Recommendation breadth</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">showing tier ≤ {interestLevel}</span>
+                </div>
+                <ScopeSlider value={interestLevel} onChange={(v: number) => setInterestLevel(v)} />
+                <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <span>Local / Casual</span>
+                  <span>Global / Prestigious</span>
+                </div>
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               {isLoadingTab ? (
