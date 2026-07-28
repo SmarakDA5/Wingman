@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { hasContentAccess } from '../stores/dashboardStore';
 import { EventCard } from '../components/EventCard';
 import webhooks from '../services/api';
 
@@ -57,6 +58,9 @@ export const LikesView = () => {
     if (!email) { setLoading(false); return; }
     setLoading(true);
     try {
+      // PASS B is gated: a locked account fetches and shows NO liked feeds.
+      const allowed = await hasContentAccess();
+      if (!allowed) { setRows([]); return; }
       const r = await webhooks.fetchLikedItems();
       const all = (r.items || []).map((x: any) => ({ ...x, isLiked: true }));
       setRows(all.filter((x: any) => !isOrphan(x)));
@@ -72,6 +76,28 @@ export const LikesView = () => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [email]);
+
+  // Re-load the instant access is granted (e.g. after Refresh Status), no manual reload needed.
+  useEffect(() => {
+    let unsub: (() => void) | undefined;
+    let last = false;
+    let alive = true;
+    (async () => {
+      try {
+        const mod = await import('../stores/subscriptionStore');
+        const useSub = (mod as any).useSubscriptionStore;
+        if (!alive || !useSub || typeof useSub.subscribe !== 'function') return;
+        last = !!(useSub.getState && useSub.getState().has_access);
+        unsub = useSub.subscribe((st: any) => {
+          const now = !!st.has_access;
+          if (now && !last) { last = now; void load(); }
+          else { last = now; }
+        });
+      } catch { /* ignore */ }
+    })();
+    return () => { alive = false; try { unsub?.(); } catch { /* ignore */ } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email]);
 
   const onToggle = async (id: any, isLiked: boolean, type: string) => {
     const next = !isLiked;
