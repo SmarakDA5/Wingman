@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../services/api';
@@ -23,7 +23,7 @@ const GRAIN = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 
 const DISPLAY = "'Bricolage Grotesque', system-ui, sans-serif";
 
-interface LegalPage {
+interface LegalDoc {
   slug?: string;
   title?: string;
   content?: string;
@@ -35,9 +35,8 @@ const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const URL_RE = /https?:\/\/[^\s)]+/i;
 const TOKEN_RE = new RegExp(`(${EMAIL_RE.source})|(${URL_RE.source})`, 'gi');
 
-// Turn emails/URLs inside a string into high-contrast, tappable links.
 const linkify = (text: string, keyPrefix: string) => {
-  const nodes: React.ReactNode[] = [];
+  const nodes: ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
   let i = 0;
@@ -56,7 +55,7 @@ const linkify = (text: string, keyPrefix: string) => {
     } else {
       nodes.push(
         <a key={`${keyPrefix}-u-${i}`} href={token} target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-semibold text-rose-600 underline decoration-rose-500/30 decoration-2 underline-offset-4 transition hover:text-rose-500 hover:decoration-rose-500/70 dark:text-rose-400 dark:hover:text-rose-300">
+          className="group inline-flex items-center gap-1 font-semibold text-rose-600 underline decoration-rose-500/30 decoration-2 underline-offset-4 transition hover:text-rose-500 hover:decoration-rose-500/70 dark:text-rose-400 dark:hover:text-rose-300">
           {token}
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M14 5h5v5M19 5l-7.5 7.5M11 5H6a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1v-5" />
@@ -77,12 +76,12 @@ const fmtDate = (v?: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
-export const LegalPage = () => {
+export const LegalPage = ({ slug: slugProp }: { slug?: string }) => {
   const params = useParams();
   const navigate = useNavigate();
-  const slug = (params as any)?.slug || (params as any)?.id || Object.values(params || {})[0] || '';
+  const slug = slugProp || (params as any)?.slug || (params as any)?.id || Object.values(params || {})[0] || '';
 
-  const [page, setPage] = useState<LegalPage | null>(null);
+  const [page, setPage] = useState<LegalDoc | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -92,7 +91,7 @@ export const LegalPage = () => {
     setError('');
     try {
       const { data } = await apiClient.get(`${LEGAL_WEBHOOK}/${encodeURIComponent(slug)}`);
-      const row = (Array.isArray(data) ? data[0] : data) as LegalPage | undefined;
+      const row = (Array.isArray(data) ? data[0] : data) as LegalDoc | undefined;
       if (!row || !row.content) { setError('This page could not be found.'); setPage(null); }
       else setPage(row);
     } catch (e) {
@@ -113,7 +112,6 @@ export const LegalPage = () => {
     document.head.appendChild(l);
   }, []);
 
-  // Split the raw text into readable blocks; pull out a trailing "Last updated" line.
   const { blocks, updatedLine, dropCapOnFirst } = useMemo(() => {
     const raw = (page?.content || '').replace(/\r/g, '');
     let parts = raw.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean);
@@ -121,7 +119,6 @@ export const LegalPage = () => {
     if (parts.length && /^last\s+updated[:\s]/i.test(parts[parts.length - 1])) {
       updated = parts.pop()!.replace(/^last\s+updated[:\s]*/i, '').trim();
     }
-    // Drop a leading block that just repeats the title (avoids a doubled heading).
     if (parts.length && page?.title && parts[0].toLowerCase() === page.title.toLowerCase()) parts.shift();
     const first = parts[0] || '';
     const drop = first.length > 48 && !/^[A-Z0-9._%+-]+@/i.test(first) && !/^https?:\/\//i.test(first) && !/^(contact|email|last updated)/i.test(first);
@@ -145,7 +142,6 @@ export const LegalPage = () => {
       </div>
 
       <div className="relative mx-auto max-w-2xl px-6 pt-8">
-        {/* top bar */}
         <div className="mb-8 flex items-center justify-between">
           <button type="button" onClick={goBack}
             className="group inline-flex h-10 items-center gap-2 rounded-full border border-black/[0.06] bg-white/70 pl-3 pr-4 text-[13px] font-semibold text-zinc-700 backdrop-blur-sm transition hover:bg-white active:scale-[0.97] dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.09]">
@@ -216,7 +212,6 @@ export const LegalPage = () => {
                 })}
               </div>
 
-              {/* legible footer meta */}
               {(resolvedUpdated || page?.version) && (
                 <motion.footer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
                   className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-black/[0.06] pt-5 text-[13px] font-medium text-zinc-500 dark:border-white/10 dark:text-zinc-400">
@@ -241,4 +236,3 @@ export const LegalPage = () => {
 };
 
 export default LegalPage;
-export { LegalPage as Legal, LegalPage as LegalPageView, LegalPage as LegalView };
