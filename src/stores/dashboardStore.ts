@@ -3,11 +3,8 @@ import type { FeedItem } from '../types';
 import webhooks from '../services/api';
 import { useAuthStore } from './authStore';
 
-// This store is intentionally NOT persisted: recommendations + likes must live only in
-// memory so they vanish on tab-close and are always re-fetched from the DB per session.
-if (typeof window !== 'undefined') {
-  try { localStorage.removeItem('feeds-storage'); } catch { /* ignore */ } // purge the old blob once
-}
+// Feeds/likes/saved are NEVER persisted: they vanish on close/logout and, crucially,
+// are not fetched at all when the account has no active access.
 
 export type FeedTab = 'discover' | 'recommended' | 'trending' | 'likes' | 'saved';
 
@@ -19,9 +16,10 @@ export interface FeedsState {
   isLoading: boolean;
   isInitialized: boolean;
   fetchedAt: number | null;
+  accessDenied: boolean;
   loadingTabs: Partial<Record<FeedTab, boolean>>;
   setActiveTab: (tab: FeedTab) => void;
-  initializeFeeds: () => Promise<void>;
+  initializeFeeds: (force?: boolean) => Promise<void>;
   refreshTab: (tab: FeedTab) => Promise<void>;
   toggleLike: (id: number, tab: FeedTab, isLiked: boolean, itemType: string) => Promise<void>;
   clearFeeds: () => void;
@@ -41,7 +39,6 @@ async function fetchAllFeeds(): Promise<Record<FeedTab, FeedItem[]>> {
   };
 }
 
-// Wait until auth-storage has rehydrated so the email interceptor is populated.
 async function awaitAuthHydration(): Promise<void> {
   const ap = (useAuthStore as any).persist;
   if (ap && typeof ap.hasHydrated === 'function' && !ap.hasHydrated()) {
@@ -52,33 +49,95 @@ async function awaitAuthHydration(): Promise<void> {
   }
 }
 
+// PASS A verdict: is this account entitled to content right now?
+// Fail-OPEN on a transient error so a paying user whose status check times out isn't stranded;
+// a genuine denial (has_access=false, no error) returns false and withholds all content.
+async function checkAccess(): Promise<boolean> {
+  try {
+    const mod = await import('./subscriptionStore');
+    const useSub = (mod as any).useSubscriptionStore;
+    if (!useSub || typeof useSub.getState !== 'function') return true;
+    const ap = useSub.persist;
+    if (ap && typeof ap.hasHydrated === 'function' && !ap.hasHydrated()) {
+      await new Promise<void>((resolve) => {
+        const off = ap.onFinishHydration(() => { off?.(); resolve(); });
+        if (ap.hasHydrated()) { off?.(); resolve(); }
+      });
+    }
+    let st = useSub.getState();
+    if (!st.loaded && typeof st.verifySubscription === 'function') {
+      try { await st.verifySubscription(); } catch { /* fall through to fail-open */ }
+      st = useSub.getState();
+    }
+    if (st.error) return true;
+    return st.has_access === true;
+  } catch {
+    return true;
+  }
+}
+
+// Exported so views that fetch content directly (Likes) can gate on the same verdict.
+export const hasContentAccess = checkAccess;
+
+let grantWired = false;
+
 export const useFeedsStore = create<FeedsState>()((set, get) => ({
   activeTab: 'discover',
   feeds: { ...EMPTY_FEEDS },
   isLoading: false,
   isInitialized: false,
   fetchedAt: null,
+  accessDenied: false,
   loadingTabs: {},
 
   setActiveTab: (activeTab: FeedTab) => set({ activeTab }),
 
-  initializeFeeds: async () => {
+  initializeFeeds: async (force?: boolean) => {
+    if (!force && get().isInitialized) return;
     await awaitAuthHydration();
     const email = useAuthStore.getState().user?.email;
-    if (!email) { set({ feeds: { ...EMPTY_FEEDS }, isLoading: false, isInitialized: true, fetchedAt: null }); return; }
-    set({ isLoading: true });
-    try {
-      const next = await fetchAllFeeds();
-      set({ feeds: next, isLoading: false, isInitialized: true, fetchedAt: Date.now() });
-    } catch (error) {
-      set({ isLoading: false, isInitialized: true });
-      console.error('Failed to initialize feeds:', error);
+    if (!email) {
+      set({ feeds: { ...EMPTY_FEEDS }, isLoading: false, isInitialized: true, fetchedAt: null, accessDenied: false });
+      return;
+    }
+    // PASS A must resolve before PASS B is allowed to run.
+    const allowed = await checkAccess();
+    set({ accessDenied: !allowed });
+    if (!allowed) {
+      // Withhold everything: no network call, empty in-memory feeds.
+      set({ feeds: { ...EMPTY_FEEDS }, isLoading: false, isInitialized: true, fetchedAt: null });
+    } else {
+      set({ isLoading: true });
+      try {
+        const next = await fetchAllFeeds();
+        set({ feeds: next, isLoading: false, isInitialized: true, fetchedAt: Date.now() });
+      } catch (error) {
+        set({ isLoading: false, isInitialized: true });
+        console.error('Failed to initialize feeds:', error);
+      }
+    }
+    // Auto-load content the moment access is granted, without a reload.
+    if (!grantWired) {
+      grantWired = true;
+      try {
+        const mod = await import('./subscriptionStore');
+        const useSub = (mod as any).useSubscriptionStore;
+        if (useSub && typeof useSub.subscribe === 'function') {
+          let last = !!(useSub.getState && useSub.getState().has_access);
+          useSub.subscribe((st: any) => {
+            const now = !!st.has_access;
+            if (now && !last) { last = now; void get().initializeFeeds(true); }
+            else { last = now; }
+          });
+        }
+      } catch { /* ignore */ }
     }
   },
 
   refreshTab: async (tab: FeedTab) => {
     const user = useAuthStore.getState().user;
     if (!user?.email) return;
+    if (!(await checkAccess())) return; // never refresh content for a locked account
     set((state) => ({ loadingTabs: { ...state.loadingTabs, [tab]: true } }));
     try {
       let result;
@@ -90,11 +149,7 @@ export const useFeedsStore = create<FeedsState>()((set, get) => ({
         case 'saved': result = await webhooks.fetchSavedItems(); break;
         default: return;
       }
-      set((state) => ({
-        feeds: { ...state.feeds, [tab]: result.items },
-        loadingTabs: { ...state.loadingTabs, [tab]: false },
-        fetchedAt: Date.now(),
-      }));
+      set((state) => ({ feeds: { ...state.feeds, [tab]: result.items }, loadingTabs: { ...state.loadingTabs, [tab]: false }, fetchedAt: Date.now() }));
     } catch (error) {
       set((state) => ({ loadingTabs: { ...state.loadingTabs, [tab]: false } }));
       console.error(`Failed to refresh ${tab} feed:`, error);
@@ -123,6 +178,5 @@ export const useFeedsStore = create<FeedsState>()((set, get) => ({
     }
   },
 
-  // Wipe in-memory feeds (used on logout so nothing leaks to the next session/account).
-  clearFeeds: () => set({ feeds: { ...EMPTY_FEEDS }, isInitialized: false, fetchedAt: null, loadingTabs: {}, isLoading: false }),
+  clearFeeds: () => set({ feeds: { ...EMPTY_FEEDS }, isInitialized: false, fetchedAt: null, accessDenied: false, loadingTabs: {}, isLoading: false }),
 }));
