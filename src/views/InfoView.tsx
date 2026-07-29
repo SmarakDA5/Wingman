@@ -271,7 +271,7 @@ export const InfoView = () => {
           </div>
         </motion.section>
 
-        <div className="mt-8 flex flex-col items-stretch gap-3">
+               <div className="mt-8 flex flex-col items-stretch gap-3">
           <button
             type="button"
             onClick={onSave}
@@ -285,9 +285,21 @@ export const InfoView = () => {
           >
             {saving ? 'Saving…' : 'Save & open my feed'}
           </button>
-          <p className="text-center text-[12px] text-zinc-400 dark:text-zinc-600">
-            {valid ? 'Looks complete — your recommendations will refresh on save.' : `Complete all four fields to continue (${done}/4).`}
-          </p>
+
+          <div className="rounded-2xl border border-black/[0.04] bg-zinc-500/[0.04] px-4 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
+            <p className="text-center text-[12px] text-zinc-400 dark:text-zinc-600">
+              {valid ? 'Looks complete — your recommendations will refresh on save.' : `Complete all four fields to continue (${done}/4).`}
+            </p>
+            <div className="mt-3 flex items-start justify-center gap-2 border-t border-black/[0.04] pt-3 dark:border-white/[0.06]">
+              <svg viewBox="0 0 24 24" className="mt-px h-3.5 w-3.5 shrink-0 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
+              </svg>
+              <p className="max-w-md text-center text-[12px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+                The refresh may not work immediately — please wait a moment and refresh the page if your feed doesn't update.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Account / session footer — the only place Sign out lives */}
