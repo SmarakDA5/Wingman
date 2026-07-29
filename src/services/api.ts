@@ -1,6 +1,19 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
-
+// Reads the signed-in email without any import (Zustand persist shape + fallbacks).
+const _authEmail = (): string => {
+  try {
+    if (typeof window === 'undefined') return '';
+    const raw = window.localStorage.getItem('auth-storage');
+    if (!raw) return '';
+    const p = JSON.parse(raw);
+    const s = p?.state ?? p;            // {state:{...}} or flat
+    const u = s?.user ?? s;             // user nested or flat
+    return String(u?.email ?? s?.email ?? '').trim();
+  } catch {
+    return '';
+  }
+};
 const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL || '/webhook';
 
 export const apiClient = axios.create({
